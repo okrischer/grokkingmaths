@@ -4,67 +4,162 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ d18f4235-f40b-44db-b0e0-1ea97c2cd16b
+# ╔═╡ 9e101b16-5cfd-42b8-b515-0fa685db0449
 begin
+	include("helper.jl")
 	using Luxor
 	using MathTeXEngine
-	Drawing(700, 210, "deMorgan.svg")
+end
+
+# ╔═╡ 5b99059d-12d0-4824-a73f-e42a789fca7c
+md"""
+# Mathematical Logic
+## Basic Set Theory
+
+[Set Theory](https://en.wikipedia.org/wiki/Set_theory) is commonly accepted as the foundational system of mathematics, particularly in the form of the axiomatic [Zermelo–Fraenkel](https://en.wikipedia.org/wiki/Zermelo%E2%80%93Fraenkel_set_theory) set theory with the axiom of choice.
+
+Besides its foundational role, set theory also provides the framework to develop a *mathematical theory of infinity*, and has various applications in computer science (such as in the theory of relational algebra), philosophy, formal semantics, and evolutionary dynamics.
+"""
+
+# ╔═╡ d6e9c695-5b1c-4d84-9b2f-996dba657ef3
+md"""
+The basic rules for operating with sets are:
+
+!!! warning "Definitions"
+	- A *set* is an unorderd collection of distinct objects, which are called *elements*.
+	- If ``x`` is an element of set ``S``, we write ``x \in S``. This is read as '*x in S*'.
+	- *Set-builder notation* is written like this: ``S = \{variable \mid predicate\}``, where the vertical bar is read as '*such that*'.
+	- The *cartesian product* ``A \times B = \{(a, b) \mid a \in A \ \textrm{and} \ b \in B\}`` is the set of ordered pairs of all elements in A and B.
+	- The set containing no elements is called the *empty set* and is denoted with ``\emptyset``.
+	- If ``x \in B`` for every ``x \in A``, then ``A`` is a *subset* of ``B``, which is denoted as ``A \subseteq B``.
+	- ``A \cap B = \{x \in A \ \textrm{and} \ x \in B\}`` is the *intersection* of ``A`` and ``B``.
+	- ``A \cup B = \{x \in A \ \textrm{or} \ x \in B\}`` is the *union* of ``A`` and ``B``.
+	
+	- ``U`` is the *universal set*, which contains all sets of discourse.
+	- ``A^C = U \setminus A = \{x \mid x \in U \textrm{ and } x \notin A\}`` is the (absolute) *complement* of ``A``.
+	- ``A \setminus B = \{x \mid x \in A \textrm{ and } x \notin B\}`` is the (relative) *complement* of ``B`` in ``A``, also called the *difference* of ``A \textrm{ and } B``.
+	- ``A \Delta B = (A \setminus B) \cup (B \setminus A)`` is the *symmetric difference* of ``A \textrm{ and } B``; it contains all elements that are in either set, but not in their intersection.
+	- The *power set* of a set ``A`` is ``\mathcal{P}(A) = \{X \mid X \subseteq A\}``. 
+"""
+
+# ╔═╡ c857a0d6-3302-4085-a4de-55c32ad0ff5f
+md"""
+!!! tip "Examples for set-builder notation"
+	- ``\{x \in \mathbb{R} \mid x > 0\}`` is the set of all strictly positive *real numbers*
+	- ``\{2n \mid n \in \mathbb{N}\}`` is the set of all even natural numbers
+	- ``\{2z + 1 \mid z \in \mathbb{Z}\}`` is the set of all odd integer numbers
+	- ``\mathbb{Q} = \{\frac{p}{q} \mid p, q \in \mathbb{Z}, q \neq 0\}`` is the set of *rational numbers*
+	- ``\{(x, y) \in \mathbb{R} \times \mathbb{R} \mid 0 < y < f(x)\}``  is the set of pairs of real numbers such that y is greater than ``0`` and less than ``f(x)``, for a given function f.
+
+Basic set operations can be illustrated with [Venn diagrams](https://en.wikipedia.org/wiki/Venn_diagram):
+"""
+
+# ╔═╡ 1057ab6f-987d-4455-a9f2-fe79a4cf764b
+begin
+	Drawing(600, 400, "set-operations.svg")
 	fontface("Arial")
 	fontsize(20)
 	setcolor("black")
 	
 	a = Point(100, 100)
 	b = Point(200, 100)
-	a1 = Point(500, 100)
-	b1 = Point(600, 100)
-
-	setcolor(0.8, 0.8, 0)
-	rect(Point(0, 0), 300, 210, action = :fill)
-	rect(Point(400, 0), 300, 210, action = :fill)
+	a1 = Point(400, 100)
+	b1 = Point(500, 100)
+	a2 = Point(100, 300)
+	b2 = Point(200, 300)
+	a3 = Point(400, 300)
+	b3 = Point(500, 300)
 	
-	setcolor(1, 0.5, 0.5)
-	circle(a, 80, action=:fill)
-	circle(b, 80, action=:fill)
-	setcolor("black")
 	circle(a, 80, action=:stroke)
 	circle(b, 80, action=:stroke)
-	
-	circle(a1, 80, action=:stroke)
-	circle(b1, 80, action=:stroke)
-	setcolor(1, 0.5, 0.5)
+	setcolor(0.8, 0.8, 0)
+	circle(a, 80, :clip)
+	circle(b, 80, :fill)
+	clipreset()
+	circle(a1, 80, :fill)
+	circle(b1, 80, :fill)
+	setcolor("black")
+	circle(a1, 80, :stroke)
+	circle(b1, 80, :stroke)
+	setcolor("white")
 	circle(a1, 80, :clip)
 	circle(b1, 80, :fill)
 	clipreset()
-	
+	setcolor(0.8, 0.8, 0)
+	circle(a2, 80, action=:fill)
+	circle(b2, 80, action=:fill)
+	setcolor("black")
+	circle(a2, 80, action=:stroke)
+	circle(b2, 80, action=:stroke)
+	circle(a3, 80, action=:stroke)
+	setcolor(0.8, 0.8, 0)
+	circle(a3, 80, action=:fill)
+	setcolor("black")
+	circle(b3, 80, action=:stroke)
+	setcolor("white")
+	circle(b3, 80, action=:fill)
 
 	setcolor("black")
-	text("1.", Point(10,20))
 	text("A", Point(60,60))
-	text("U", Point(280,20))
 	text("B", Point(230,60))
-	text("2.", Point(410,20))
-	text("A", Point(460,60))
-	text("B", Point(630,60))
-	text("U", Point(680,20))
-	fontsize(16)
-	text(L"\overline{A \cup B} = A^C \cap B^C", Point(100, 200))
-	text(L"\overline{A \cap B} = A^C \cup B^C", Point(500, 200))
+	text("A", Point(360,60))
+	text("B", Point(530,60))
+	text("A", Point(60,260))
+	text("B", Point(230,260))
+	text("A", Point(360,260))
+	text("B", Point(530,260))
+	fontsize(14)
+	text("intersection", Point(120, 200))
+	text("symmetric difference", Point(390, 200))
+	text("union", Point(130, 400))
+	text("difference", Point(420, 400))
 	
 	finish()
 	preview()
 end
 
-# ╔═╡ 225ac75a-094e-11ef-0e3c-152ab08c74a8
-include("helper.jl")
-
-
-# ╔═╡ eeb209de-5f2f-4fbe-a179-6858a6b891d0
+# ╔═╡ f12aeb69-da18-499f-ad88-60384e3ac4df
 md"""
-# Basic Concepts of Propositional Logic
+### Working with sets in Julia
+We can create the equivalent of a set with list comprehensions like so:
+"""
 
-*Propositional Logic* is, besides set theory, another cornerstone of modern mathematics. Without it, we weren't able to give precise mathematical arguments.
+# ╔═╡ 12df1d0b-b377-4d21-997f-ff0237e86118
+A = [n for n ∈ 2:2:20] # the first 10 even natural numbers
 
-## Reasoning about mathematical statements
+# ╔═╡ 3abe46a6-cec2-4be7-bde9-822b02471d32
+B = [n for n ∈ 1:2:20] # the first 10 odd natural numbers
+
+# ╔═╡ 7d36c92e-c761-4e7f-9dc7-0cb7aa287169
+md"""
+There are also operators for working with sets:
+- ∪ : union (\cup)
+- ∩ : intersection (\cap)
+- ⊆ : subset (\subseteq)
+
+To get those symbols, type the expression in parentheses (including the leading backslash) and hit <Tab>.
+Alternatively, you can also call their respective functions (`union`, `intersect`, `issubset`, `setdiff`).
+"""
+
+# ╔═╡ 9d66303a-9475-4800-9ab9-8974264a6cd0
+AorB = A ∪ B
+
+# ╔═╡ 385b1b24-6639-45e7-a2de-2ce5ccca81e9
+AandB = A ∩ B
+
+# ╔═╡ 59994588-4bdf-47c5-9788-a32204b2618d
+A ⊆ AorB
+
+# ╔═╡ d02cb1ec-2eb3-4bb5-aa29-98d1b28b3a73
+setdiff(AorB, A) == B
+
+# ╔═╡ dcafbc31-c479-419c-8ef7-7ea5261944b3
+md"""
+## Propositional Logic
+
+*Propositional Logic* is, besides set theory, the cornerstone of modern mathematics. Without it, we weren't able to give precise mathematical arguments.
+
+### Reasoning about mathematical statements
 
 Propositional logic describes patterns for reasoning about the validity of *mathematical statements*, where the validity depends only on the *logical connectives* `if...then`, `and`, `or`, and `not`.
 
@@ -91,7 +186,7 @@ These would *not* be valid propositions:
 	- Better late than never.
 """
 
-# ╔═╡ a0c45e5b-91a5-40a1-ba93-8378cf638aa7
+# ╔═╡ 11b366ca-5e4d-4ba9-ad1a-967ffbc2ac51
 md"""
 We are using *logical connectives* to create *compound statements*, that is, statements that contain subparts that are themselves statements:
 
@@ -126,7 +221,7 @@ where (1) and (2) are called the *premisses* and (3) is called the *conclusion* 
 In general, we use modus ponens for *direct proofs* and modus tollens for *proofs by contradiction*.
 """
 
-# ╔═╡ 243ac33d-264f-41d0-8581-d5520a0a07a8
+# ╔═╡ af54e5ad-8007-4208-972b-bb7c0a952449
 md"""
 For a deeper understanding of what's going on, let's look at the *truth table* for
 implication:
@@ -170,7 +265,7 @@ Think about it: what if the Pope himself gave that argument?
 	So, *modus ponens* reads as: "``(P_1 \textrm{ implies } P_2 \textrm{, and } P_1) \textrm{ satisfies } P_2``". 
 """
 
-# ╔═╡ 8200c369-cfdb-4dd9-a8c8-ada4e3d40653
+# ╔═╡ 04c6f1db-d202-49ab-b599-b7f04074d548
 md"""
 Equipped with a basic understanding of propositional logic, we can now give some basic definitions of how to work with logical connectives:
 
@@ -185,7 +280,7 @@ Equipped with a basic understanding of propositional logic, we can now give some
 Notice that the laws (2) - (5) also exist for *disjunction* with the same consequences (just exchange ``\land`` and ``\lor``).
 Also observe that the *law of contraposition* (6) is a direct consequence of *modus tollens*.
 
-## De Morgan's Theorem
+### De Morgan's Theorem
 
 Building up on these rules we can turn our interest to the following *theorem*, named after *Augustus De Morgan*, a 19th-century British mathematician:
 
@@ -212,16 +307,64 @@ leading to an alternative notation of *De Morgan's* laws:
 We can illustrate thoses rules with a *Venn* diagram:
 """
 
-# ╔═╡ 9722ad66-fed1-4689-882a-70813c6620d9
+# ╔═╡ 7a54a98a-a36b-4fd3-8da7-986870b6713c
+begin
+	Drawing(700, 210, "deMorgan.svg")
+	fontface("Arial")
+	fontsize(20)
+	setcolor("black")
+	
+	c = Point(100, 100)
+	d = Point(200, 100)
+	c1 = Point(500, 100)
+	d1 = Point(600, 100)
+
+	setcolor(0.8, 0.8, 0)
+	rect(Point(0, 0), 300, 210, action = :fill)
+	rect(Point(400, 0), 300, 210, action = :fill)
+	
+	setcolor(1, 0.5, 0.5)
+	circle(c, 80, action=:fill)
+	circle(d, 80, action=:fill)
+	setcolor("black")
+	circle(c, 80, action=:stroke)
+	circle(d, 80, action=:stroke)
+	
+	circle(c1, 80, action=:stroke)
+	circle(d1, 80, action=:stroke)
+	setcolor(1, 0.5, 0.5)
+	circle(c1, 80, :clip)
+	circle(d1, 80, :fill)
+	clipreset()
+	
+
+	setcolor("black")
+	text("1.", Point(10,20))
+	text("A", Point(60,60))
+	text("U", Point(280,20))
+	text("B", Point(230,60))
+	text("2.", Point(410,20))
+	text("A", Point(460,60))
+	text("B", Point(630,60))
+	text("U", Point(680,20))
+	fontsize(16)
+	text(L"\overline{A \cup B} = A^C \cap B^C", Point(100, 200))
+	text(L"\overline{A \cap B} = A^C \cup B^C", Point(500, 200))
+	
+	finish()
+	preview()
+end
+
+# ╔═╡ d2854451-da31-4c77-8af8-f26acd5ccf5b
 md"""
 In each case, the resulting set is the set of all points shaded in green.
 
-## Logic with Julia
+### Logic with Julia
 You may have noticed that there's no built-in operator for *implication* in Julia.
 So, we're going to build an equivalent function for ourselves
 """
 
-# ╔═╡ ed7b044d-ea9a-4f02-a5cc-cac44e43c6d0
+# ╔═╡ 381b356f-715e-4ce6-95e0-0d7b8ad9a165
 begin
 	implies(p::Bool, q::Bool) = !p ? true : q
 
@@ -231,16 +374,16 @@ begin
 	@show implies(false, false)
 end
 
-# ╔═╡ 52d54e88-96d0-4f3c-bb77-9802812d4e4c
+# ╔═╡ 27a862bd-6340-46fa-b020-ebe1bbb8eac0
 md"""
 and we see that it is working correctly by giving the expected values from the truth table for *implication*.
 Now, let's use this function for testing the *law of contraposition*:
 """
 
-# ╔═╡ 0fd17b63-2a03-40f8-8934-da90460d0af5
+# ╔═╡ 609b644e-f0ba-403e-b20f-91b943279507
 implies(true, true) == implies(false, false)
 
-# ╔═╡ e9834605-f1f6-41ae-87af-1a9ba4e05464
+# ╔═╡ 17642d8e-2f17-4677-a800-8af0280aeb3b
 md"""
 But if we wanted to *prove* the *law of contraposition*, we would have to check for every possible combination of the two boolean values, that is, the *cartesian product*
 
@@ -253,47 +396,124 @@ just like we would do for creating a *truth table* for a given logical statement
 In order to spare us the effort of creating that truth table manually, we're going to implement a function `equiv`, which takes two boolean functions as parameters and compares their output for every possible combination of boolean values:
 """
 
-# ╔═╡ 67180f2a-06ff-444a-9101-8920587c4415
+# ╔═╡ 5432fae4-2adf-4449-96c8-274ddcb161f3
 function equiv(bf1::Function, bf2::Function)
 	all([(bf1(p, q) == bf2(p, q)) for p in [true, false] for q in [true, false]])
 end
 
-# ╔═╡ 54509ce2-6741-4646-8482-fa79838d899e
+# ╔═╡ a166f689-6c8b-43df-bf42-b57c59fc14d5
 md"""
 For calling our new function, we have to define two separate boolean functions, one for the left-hand side (lhs) of the formula to prove, and the other for its right-hand side (rhs).
 
 Remember, the law of contraposition is given by: ``P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P``.
 """
 
-# ╔═╡ 68674470-7af1-4341-a3a9-cd0e1dea367d
+# ╔═╡ 5da4b595-b628-49fd-bbd4-c4504f487987
 begin
 	lcp_lhs(p, q) = implies(p, q)
 	lcp_rhs(p, q) = implies(!q, !p)
 	equiv(lcp_lhs, lcp_rhs)
 end
 
-# ╔═╡ c005179e-70e2-4465-8051-e7e1e8da20b0
+# ╔═╡ d20fd9d8-807a-44f5-8476-e8f2713fd029
 md"That works out correctly, but just to be safe, let's check an invalid argument (like the second Russel's argument from above):"
 
-# ╔═╡ e7eaa227-e41a-4bad-a916-b209f1fc6acd
+# ╔═╡ b4c18e7f-6e43-4e93-86c2-bd5a51dd8e09
 begin
 	invalid_lhs(p, q) = implies(p, q)
 	invalid_rhs(p, q) = implies(!p, !q)
 	equiv(invalid_lhs, invalid_rhs)
 end
 
-# ╔═╡ 18c31de3-2fe7-4b2b-9a20-0aa94f3f0936
+# ╔═╡ 342684d9-af3d-46b7-8539-1c2d2df2ad79
 md"""
 Voila, that argument is correctly identified as *invalid*.
 
 I leave it to you, whether you accept this procedure as a mathematical proof; I certainly would.
-""" 
+"""
 
-# ╔═╡ a3135737-d959-4311-8bd5-e968713eb1c2
+# ╔═╡ d1160c0e-0494-4237-abe0-d03ea47f8fc7
 md"""
-## Review Questions
+## Exercises
+Let ``C`` the set of the squares of the first 10 natural numbers, and ``D`` the set of the first 50 even natural numbers.
 
-1. **Prove the first law of *de Morgan* for *disjunction* by giving a truth table for that statement.**
+**What is the intersection of C and D?**\
+Calculate the resulting set ``U_{CD}`` in the follwing code cell.
+"""
+
+# ╔═╡ 2a21906b-f05e-4d9b-abb9-c66991858b3c
+begin
+	U_CD = []
+end
+
+# ╔═╡ 4a7c11c4-f69a-496b-8aad-bcdc66ece56f
+if U_CD == [4, 16, 36, 64, 100]
+	correct()
+elseif length(U_CD) == 5
+	almost(md"The number of elements is correct.")
+else
+	keep_working()
+end
+
+# ╔═╡ 01733078-e593-4c4a-88ca-ed93fef52348
+md"""
+!!! hint "Hint"
+	Try to define the sets ``C`` and ``D`` with list comprehensions according to their definition in *set-builder* notation:
+	``C = \{n^2 \mid n \in \mathbb{N} \textrm{ and } n \leq 10\}`` and  ``D = \{2n \mid n \in \mathbb{N} \textrm{ and } n \leq 50\}``
+"""
+
+# ╔═╡ bf17ba80-b1e9-4b8d-8a86-fe79f5d0a071
+md"""
+!!! hint "Solution"
+	```julia
+	begin
+		C = [n^2 for n in 1:10]
+		D = [2n for n in 1:50]
+		U_CD = C ∩ D
+	end
+	```
+"""
+
+# ╔═╡ dd720261-9487-4410-b38f-65dfdf60b8a7
+md"""
+**In a variation of the fomous [fizz-buzz](https://en.wikipedia.org/wiki/Fizz_buzz) game, create the set of natural numbers up to 20, which would have been replaced with `fizz`, `buzz` or `fizz-buzz` in the original game.**
+"""
+
+# ╔═╡ 27ba07d9-cd81-4891-9392-54a76356fd80
+begin
+	fizz_buzz = []
+end
+
+# ╔═╡ 4da0ad72-72fb-4299-b5a1-afb25437587b
+if sort(fizz_buzz) == [3,5,6,9,10,12,15,18,20]
+	correct(md"You got the right answer! Move on to the next section.")
+elseif length(fizz_buzz) == 9
+	almost(md"The number of elements is correct.")
+else
+	keep_working()
+end
+
+# ╔═╡ 5e14522a-14fc-4066-9d88-523b32bc8f95
+md"""
+!!! hint "Solution"
+	```julia
+	begin
+		fizz = [f for f ∈ 1:20 if f % 3 == 0]
+		buzz = [b for b ∈ 1:20 if b % 5 == 0]
+		fizz_buzz = fizz ∪ buzz
+	end
+	```
+	which could be solved equivalently with just a single instruction:
+	```julia
+	fizz_buzz = [fb for fb ∈ 1:20 if fb % 3 == 0 || fb % 5 == 0]
+	```. 
+"""
+
+
+# ╔═╡ 5d0390e7-f66e-4d78-89c7-868467178513
+md"""
+
+**Prove the first law of *de Morgan* for *disjunction* by giving a truth table for that statement.**
 
 !!! hint "Solution"
 	| p   | q   | ``\neg(P \lor Q)`` | ``\equiv`` | ``\neg P \land \neg Q`` |
@@ -303,7 +523,7 @@ md"""
 	| F   | T   | F                  | **T**      | F                       |
 	| F   | F   | T                  | **T**      | T                       |
 
-2. **Give an *informal proof* for the second law of *de Morgan* (conjunction), using plain English**.
+**Give an *informal proof* for the second law of *de Morgan* (conjunction), using plain English**.
 
 !!! hint "Solution"
 	Consider the following claim: "it is false that P and Q are both true", which can be written as ``\neg(P \land Q)``.\
@@ -314,27 +534,23 @@ md"""
 
 	Presented in English, this follows the logic: "*since it is false that two things are both true, at least one of them must be false*". 
 
-3. **Prove both laws of *de Morgan* by applying our `equiv` function** (change only the expressions for the literal boolean values ``\{true, false\}`` in the following code cell).
+**Prove both laws of *de Morgan* by applying our `equiv` function** (change only the expressions for the literal boolean values ``\{true, false\}`` in the following code cell).
 """
 
-# ╔═╡ bf8c68c1-2f6f-4da0-aec7-5856b3da9d9b
+# ╔═╡ de8afa13-10e7-48cb-a258-4ddd4ffe8834
 begin
 	deMorg1 = equiv((p, q) -> true, (p, q) -> false)
 	deMorg2 = equiv((p, q) -> true, (p, q) -> false)
 end
 
-# ╔═╡ 4df81a63-9155-4ac9-aed4-e5c53fbe7a9c
+# ╔═╡ 33b4ba18-93e2-404d-ac65-a71ccfbef812
 deMorg1 && deMorg2 ? correct() : keep_working()
 
-# ╔═╡ e8106d51-b3d8-4f11-9051-b7b3bd43b1ff
+# ╔═╡ 25093e74-19fc-4d60-8abd-8ab552877d1e
 md"""
 !!! hint "Hint"
 	Use *anonymous function definitions* as parameters for `equiv`.
-"""
 
-
-# ╔═╡ 06a726a6-fce8-476e-bbc5-3b92239ea0f3
-md"""
 !!! hint "Solution"
 	```julia
 	begin
@@ -1147,27 +1363,47 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─eeb209de-5f2f-4fbe-a179-6858a6b891d0
-# ╟─a0c45e5b-91a5-40a1-ba93-8378cf638aa7
-# ╟─243ac33d-264f-41d0-8581-d5520a0a07a8
-# ╟─8200c369-cfdb-4dd9-a8c8-ada4e3d40653
-# ╟─d18f4235-f40b-44db-b0e0-1ea97c2cd16b
-# ╟─9722ad66-fed1-4689-882a-70813c6620d9
-# ╠═ed7b044d-ea9a-4f02-a5cc-cac44e43c6d0
-# ╟─52d54e88-96d0-4f3c-bb77-9802812d4e4c
-# ╠═0fd17b63-2a03-40f8-8934-da90460d0af5
-# ╟─e9834605-f1f6-41ae-87af-1a9ba4e05464
-# ╠═67180f2a-06ff-444a-9101-8920587c4415
-# ╟─54509ce2-6741-4646-8482-fa79838d899e
-# ╠═68674470-7af1-4341-a3a9-cd0e1dea367d
-# ╟─c005179e-70e2-4465-8051-e7e1e8da20b0
-# ╠═e7eaa227-e41a-4bad-a916-b209f1fc6acd
-# ╟─18c31de3-2fe7-4b2b-9a20-0aa94f3f0936
-# ╟─a3135737-d959-4311-8bd5-e968713eb1c2
-# ╠═bf8c68c1-2f6f-4da0-aec7-5856b3da9d9b
-# ╟─4df81a63-9155-4ac9-aed4-e5c53fbe7a9c
-# ╟─e8106d51-b3d8-4f11-9051-b7b3bd43b1ff
-# ╟─06a726a6-fce8-476e-bbc5-3b92239ea0f3
-# ╟─225ac75a-094e-11ef-0e3c-152ab08c74a8
+# ╟─9e101b16-5cfd-42b8-b515-0fa685db0449
+# ╟─5b99059d-12d0-4824-a73f-e42a789fca7c
+# ╟─d6e9c695-5b1c-4d84-9b2f-996dba657ef3
+# ╟─c857a0d6-3302-4085-a4de-55c32ad0ff5f
+# ╟─1057ab6f-987d-4455-a9f2-fe79a4cf764b
+# ╟─f12aeb69-da18-499f-ad88-60384e3ac4df
+# ╠═12df1d0b-b377-4d21-997f-ff0237e86118
+# ╠═3abe46a6-cec2-4be7-bde9-822b02471d32
+# ╟─7d36c92e-c761-4e7f-9dc7-0cb7aa287169
+# ╠═9d66303a-9475-4800-9ab9-8974264a6cd0
+# ╠═385b1b24-6639-45e7-a2de-2ce5ccca81e9
+# ╠═59994588-4bdf-47c5-9788-a32204b2618d
+# ╠═d02cb1ec-2eb3-4bb5-aa29-98d1b28b3a73
+# ╟─dcafbc31-c479-419c-8ef7-7ea5261944b3
+# ╟─11b366ca-5e4d-4ba9-ad1a-967ffbc2ac51
+# ╟─af54e5ad-8007-4208-972b-bb7c0a952449
+# ╟─04c6f1db-d202-49ab-b599-b7f04074d548
+# ╟─7a54a98a-a36b-4fd3-8da7-986870b6713c
+# ╟─d2854451-da31-4c77-8af8-f26acd5ccf5b
+# ╠═381b356f-715e-4ce6-95e0-0d7b8ad9a165
+# ╟─27a862bd-6340-46fa-b020-ebe1bbb8eac0
+# ╠═609b644e-f0ba-403e-b20f-91b943279507
+# ╟─17642d8e-2f17-4677-a800-8af0280aeb3b
+# ╠═5432fae4-2adf-4449-96c8-274ddcb161f3
+# ╟─a166f689-6c8b-43df-bf42-b57c59fc14d5
+# ╠═5da4b595-b628-49fd-bbd4-c4504f487987
+# ╟─d20fd9d8-807a-44f5-8476-e8f2713fd029
+# ╠═b4c18e7f-6e43-4e93-86c2-bd5a51dd8e09
+# ╟─342684d9-af3d-46b7-8539-1c2d2df2ad79
+# ╟─d1160c0e-0494-4237-abe0-d03ea47f8fc7
+# ╠═2a21906b-f05e-4d9b-abb9-c66991858b3c
+# ╟─4a7c11c4-f69a-496b-8aad-bcdc66ece56f
+# ╟─01733078-e593-4c4a-88ca-ed93fef52348
+# ╟─bf17ba80-b1e9-4b8d-8a86-fe79f5d0a071
+# ╟─dd720261-9487-4410-b38f-65dfdf60b8a7
+# ╠═27ba07d9-cd81-4891-9392-54a76356fd80
+# ╟─4da0ad72-72fb-4299-b5a1-afb25437587b
+# ╟─5e14522a-14fc-4066-9d88-523b32bc8f95
+# ╟─5d0390e7-f66e-4d78-89c7-868467178513
+# ╠═de8afa13-10e7-48cb-a258-4ddd4ffe8834
+# ╟─33b4ba18-93e2-404d-ac65-a71ccfbef812
+# ╟─25093e74-19fc-4d60-8abd-8ab552877d1e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -6,19 +6,15 @@ using InteractiveUtils
 
 # ╔═╡ 9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
 begin
+	include("helper.jl")
 	using Plots
 	using Luxor
 	using MathTeXEngine
 end
 
-# ╔═╡ ae7692a2-429a-4cb7-925e-d1e76605ee53
-include("helper.jl")
-
-# ╔═╡ 373a5d8c-c87f-4704-aac0-47b9f53bea4f
-md"# Relations and Fuctions"
-
 # ╔═╡ 4fddf332-0de0-11ef-08c0-f9b97e8e2029
 md"""
+# Relations and Functions
 ## Relations
 
 Although you probably will not be able to explain the general notation of a *relation*, you are definitely familiar with a couple of instances, such as the usual ordering relation ``<`` between natural numbers, and you already know the subset relation ``\subseteq`` between two sets.
@@ -383,6 +379,8 @@ Finally, we could give definitions with *logical* expressions, using *quantifier
 
 $surjective(f_{A \to B}) \Leftrightarrow (\forall b \in B) (\exists a \in A(f(a) = b))$
 
+which reads as "*$f_{A \to B}$ is surjective if and only if for all $b \in B$ there exists at least one $a \in A$, such that $f(a) = b$*".
+
 Following this example, give a logical definition for *injective*:
 
 !!! hint "Properties of Functions: Logical Definitions"
@@ -399,26 +397,10 @@ Most functions are neither *surjective*, nor *injective*.
 
 # ╔═╡ 43d9147f-2bad-4653-9a33-b368e67a6882
 md"""
-#### Checking for Properties of Functions
 There is a simple way of checking visually, whether a given function is *surjective*, *injective* or *bijective*.
-Let's explore that with a function $sq: \mathbb{R} \to \mathbb{R}, \ x \mapsto x^2$ by drawing its graph:
-"""
-
-# ╔═╡ eaf24fdd-9d7d-4a73-97e0-5a8aefd4dd52
-begin
-	sq(x) = x^2
-	x = range(-3, 3, length=100)
-	y = sq.(x)
-	plot(x, y, label=L"f(x)=x^2", ylims=(-2, 9), yticks=(-1:9), linewidth=2)
-	plot!(x, repeat([4], 100), label=L"y=4")
-	plot!(x, repeat([-1], 100), label=L"y=-1")
-end
-
-# ╔═╡ 6c091229-0a44-4a08-b186-3c32ae96151f
-md"""
-Now, when we place horizontal lines on the graph (like the orange line for $y=4$ and the green line for $y=-1$), we can check wether these lines intersect the function's graph:
-- if there is a line, intersecting the graph at more than one point (orange line), the function is *not injective*, as there is a *y*-value that has multiple *x*-values mapped to it 
-- if there is a line, which doesn't intersect the graph at all (green line), then the function is *not surjective*, as there is no value of the function for this *y*
+For that, we place horizontal lines on a function's graph, and check wether these lines intersect the graph:
+- if there is a line, intersecting the graph at more than one point, the function is *not injective*, as there is a *y*-value that has multiple *x*-values mapped to it 
+- if there is a line, which doesn't intersect the graph at all, then the function is *not surjective*, as there is no value of the function for this *y*
 - if every horizontal line intersects the graph in exactly one point, the function is *bijective*.
 """
 
@@ -548,17 +530,18 @@ b) **Is the inverse a function?**
 # ╔═╡ c82d6117-962c-45ca-bb49-30a70d9ce14c
 begin
 	fₒ(x) = x
-	xₒ = range(-6, 6, length=100)
+	xₒ = range(-5, 6, length=100)
 	yₒ = fₒ.(xₒ)
-	plot(xₒ, yₒ, label=L"f(x)=x^3+5", linewidth=2)
-	plot!(xₒ, repeat([5], 100), label=L"y=5")
+	plot(xₒ, yₒ, label=L"f(x)=x^3+5", ylims=(0, 10),
+		xticks=(-5:6), yticks=(0:10), linewidth=2)
+	plot!(xₒ, (x -> 5), label=L"y=5")
 end
 
 # ╔═╡ 1c1584da-4d59-4abf-8c57-42b5f7887037
 if fₒ(0) == 5 && fₒ(2) == 13
-	correct(md"Observe the line for $y=5$. It seems to run in parallel with the graph for $x \in [-0.5, +0.5]$, but actually it intersects the graph in the point $(0, 5)$.")
+	correct(md"Observe the line for $y=5$. It appears to run in parallel with the graph for $x \in [-0.2, +0.2]$, but that's only because of the graph's scale. Actually, it intersects the graph only in the point $(0, 5)$.")
 else
-	keep_working(md"Did you change $f_o(x)$ to $x^3+5$?")
+	keep_working(md"Is your definition of $f_o(x)$ correct?")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1820,7 +1803,6 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─373a5d8c-c87f-4704-aac0-47b9f53bea4f
 # ╟─9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
 # ╟─4fddf332-0de0-11ef-08c0-f9b97e8e2029
 # ╠═4c58357a-7ea3-49bb-930f-1d20788aaf68
@@ -1851,8 +1833,6 @@ version = "1.4.1+1"
 # ╟─2516845b-762f-4060-9bb9-fbe41b605cd4
 # ╟─cf442ca9-545e-47aa-8338-218de429e7ec
 # ╟─43d9147f-2bad-4653-9a33-b368e67a6882
-# ╟─eaf24fdd-9d7d-4a73-97e0-5a8aefd4dd52
-# ╟─6c091229-0a44-4a08-b186-3c32ae96151f
 # ╟─bfcdaef5-3c65-46bf-9631-35203ce27bfa
 # ╠═d09057df-29bc-4439-a561-654ea47a8cf2
 # ╟─59cda445-5a5a-4cda-ac77-51591d85bd46
@@ -1860,6 +1840,5 @@ version = "1.4.1+1"
 # ╟─c87611e5-4e20-49d0-bbbd-deebb6ba7b40
 # ╠═c82d6117-962c-45ca-bb49-30a70d9ce14c
 # ╟─1c1584da-4d59-4abf-8c57-42b5f7887037
-# ╟─ae7692a2-429a-4cb7-925e-d1e76605ee53
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
