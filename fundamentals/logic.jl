@@ -256,6 +256,16 @@ This is a correct argument, since it follows from a valid logical pattern (modus
 would be incorrect, since it doesn't follow from a valid logical pattern.
 Think about it: what if the Pope himself gave that argument?
 
+Another way to look at *implication* is in terms of [necessity and sufficiency](https://en.wikipedia.org/wiki/Necessity_and_sufficiency):\
+in the conditional statement: "If $P$ then $Q$", $Q$ is *necessary* for $P$, because the truth of $Q$ is guaranteed by the truth of $P$.
+Equivalently, it is *impossible* to have $P$ without $Q$, or the falsity of $Q$ ensures the falsity of $P$.\
+Similarly, $P$ is *sufficient* for $Q$, because $P$ being true always implies that $Q$ is true, but $P$ not being true does *not always* imply that $Q$ is not true.
+
+Consider the statement "*If I throw a stone through a window, the window pane breaks*".\
+Here, breaking the pane is *necessary*, for otherwise I couldn't throw a stone trough the window, and the stone will just bounce off the pane.\
+On the other hand, throwing the stone is *not* necessarily the only way to break the pane; I could have done that for example with a hammer.
+But, throwing the stone is *sufficient* for breaking the pane.
+
 !!! note "Logical Notation"
 	We can express valid logical patterns with *logical notation* like so:
 	- *modus ponens*: ``P_1 \to P_2, P_1 \vdash P_2``
@@ -435,10 +445,7 @@ I leave it to you, whether you accept this procedure as a mathematical proof; I 
 # ╔═╡ d1160c0e-0494-4237-abe0-d03ea47f8fc7
 md"""
 ## Exercises
-Let ``C`` the set of the squares of the first 10 natural numbers, and ``D`` the set of the first 50 even natural numbers.
-
-**What is the intersection of C and D?**\
-Calculate the resulting set ``U_{CD}`` in the follwing code cell.
+1) Let ``C`` the set of the squares of the first 10 natural numbers, and ``D`` the set of the first 50 even natural numbers. **What is the intersection of C and D?** (Use the following code cell for your answer.)
 """
 
 # ╔═╡ 2a21906b-f05e-4d9b-abb9-c66991858b3c
@@ -476,7 +483,7 @@ md"""
 
 # ╔═╡ dd720261-9487-4410-b38f-65dfdf60b8a7
 md"""
-**In a variation of the fomous [fizz-buzz](https://en.wikipedia.org/wiki/Fizz_buzz) game, create the set of natural numbers up to 20, which would have been replaced with `fizz`, `buzz` or `fizz-buzz` in the original game.**
+2) **In a variation of the fomous [fizz-buzz](https://en.wikipedia.org/wiki/Fizz_buzz) game, create the set of natural numbers up to 20, which would have been replaced with `fizz`, `buzz` or `fizz-buzz` in the original game.**
 """
 
 # ╔═╡ 27ba07d9-cd81-4891-9392-54a76356fd80
@@ -506,14 +513,13 @@ md"""
 	which could be solved equivalently with just a single instruction:
 	```julia
 	fizz_buzz = [fb for fb ∈ 1:20 if fb % 3 == 0 || fb % 5 == 0]
-	```. 
+	```
 """
 
 
 # ╔═╡ 5d0390e7-f66e-4d78-89c7-868467178513
 md"""
-
-**Prove the first law of *de Morgan* for *disjunction* by giving a truth table for that statement.**
+3) **Prove the first law of *de Morgan* for *disjunction* by giving a truth table for that statement.**
 
 !!! hint "Solution"
 	| p   | q   | ``\neg(P \lor Q)`` | ``\equiv`` | ``\neg P \land \neg Q`` |
@@ -523,7 +529,7 @@ md"""
 	| F   | T   | F                  | **T**      | F                       |
 	| F   | F   | T                  | **T**      | T                       |
 
-**Give an *informal proof* for the second law of *de Morgan* (conjunction), using plain English**.
+4) **Give an *informal proof* for the second law of *de Morgan* (conjunction), using plain English**.
 
 !!! hint "Solution"
 	Consider the following claim: "it is false that P and Q are both true", which can be written as ``\neg(P \land Q)``.\
@@ -534,7 +540,7 @@ md"""
 
 	Presented in English, this follows the logic: "*since it is false that two things are both true, at least one of them must be false*". 
 
-**Prove both laws of *de Morgan* by applying our `equiv` function** (change only the expressions for the literal boolean values ``\{true, false\}`` in the following code cell).
+5) **Prove both laws of *de Morgan* by applying our `equiv` function** (change only the expressions for the literal boolean values ``\{true, false\}`` in the following code cell).
 """
 
 # ╔═╡ de8afa13-10e7-48cb-a258-4ddd4ffe8834
@@ -549,7 +555,7 @@ deMorg1 && deMorg2 ? correct() : keep_working()
 # ╔═╡ 25093e74-19fc-4d60-8abd-8ab552877d1e
 md"""
 !!! hint "Hint"
-	Use *anonymous function definitions* as parameters for `equiv`.
+	Use [anonymous function definitions](https://docs.julialang.org/en/v1/manual/functions/#man-anonymous-functions) as parameters for `equiv`.
 
 !!! hint "Solution"
 	```julia

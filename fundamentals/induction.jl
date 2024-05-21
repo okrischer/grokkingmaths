@@ -4,547 +4,932 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
+# ╔═╡ d8d70b1c-12b4-11ef-161c-21e7e562639a
 begin
 	include("helper.jl")
-	using Plots
 	using Luxor
+	using BenchmarkTools
+	using Plots
 	using MathTeXEngine
 end
 
-# ╔═╡ 4fddf332-0de0-11ef-08c0-f9b97e8e2029
+# ╔═╡ 211c457d-756e-4f93-a883-3b1ec4ddbf9d
 md"""
-# Relations and Functions
-## Relations
+# Induction and Recursion
 
-Although you probably will not be able to explain the general notation of a *relation*, you are definitely familiar with a couple of instances, such as the usual ordering relation ``<`` between natural numbers, and you already know the subset relation ``\subseteq`` between two sets.
-For instance, the *father-of* relation holds between two people if the first one is the father of the second.
+*Mathematical Induction* is a mathematical proof method.
+The term *inductive* here is not to be confused with the meaning of the term *inductive reasoning*, which describes methods of reasoning in which broad generalizations or principles are derived from a body of observations.
+Mathematical induction is actually a form of *deductive* rather than inductive reasoning, where the conclusion of a deductive argument is certain given the premises are correct.
+But, as the term is commonly accepted, we will stick to it anyway.
 
-For every two numbers ``n, m \in \mathbb{N}`` the statement ``n < m`` is either true or false (e.g. ``3 < 5`` is true, whereas ``5 < 2`` is false).
-In general: you can "*input*" a pair of objects into a relation, after which it "*outputs*" either *true* or *false*.
+Roughly speaking, mathematical induction is a method to prove facts about objects that can be built from a finite number of pieces in a finite number of steps (e.g. the set of natural numbers).
+Such objects can often be constructed by means of *recursive definitions*.
+Thus, as we will explore in this lesson, recursive definitions and inductive proofs are two sides of the same coin.
 
-In set theory, there is a clever way to reduce the notation of a relation to that of a set.
-With that we can express the set ``R`` of ordered pairs ``(n, m)`` of natural numbers, for which ``n \leq m`` is true, with this relation:
+## Mathematical Induction
 
-$\begin{equation}
-R_{\leq} = \{(n,m) \in \mathbb{N} \times \mathbb{N} \mid n \leq m\}.
-\end{equation}$
+Let $P(n)$ a proposition about natural numbers.
+To prove a goal of the form $\forall n \in N: P(n)$ by *mathematical induction*, it is sufficient to perfom the following steps:
+1.  **base case**: this proves the statement for an arbitrarily chosen number $n_0$; in most cases this will be, but does not have to, the number 1 as the smallest natural number
+2.  **induction step**: this proves that *if* the statement holds for any given case $n=k$ *then* it must also hold for the next case $n = k + 1$ (or alternatively the preceeding case $n = k - 1$).
 
-Note that the statement ``n \leq m`` has become tantamount with the condition that ``(n, m) \in R_{\leq}``.\
-Thus, ``(3,5) \in R_{\leq}``, but ``(5,2) \notin R_{\leq}``.
-This condition can be converted into a definition.
-That is, the ordering relation ``\leq`` is identified with the set ``R_{\leq}``, which can be generalized to this definition:
+These two steps together establish that the statement holds for every natural number $n \in \mathbb{N}$.
 
-!!! warning "Definition: Relation, Domain, Range"
-	A **relation** is a set of ordered pairs.\
-	A relation ``R_{ab}`` from a set ``A`` to a set ``B`` is a subset of ``A \times B``, where ``A`` is called the **domain**, and ``B`` the **range** of the relation.
+Perhaps the easiest way to understand mathematical induduction is to work through some examples. 
 
-!!! tip "Examples for Relations"
-	1. ``\{(a, b) \in \mathbb{N^2} \mid a \leq 10, \ b = a^2\}`` is a relation that maps the first ten natural numbers to their square
-	2. ``\{(a, b) \mid a,b \in \mathbb{N}, \ ab = n, \ a\leq b\}`` gives all the divisor pairs of *n*.
+!!! tip "The sum of the first n odd numbers"
+	The sum of the first $n$ odd numbers $S_n$ equals $n^2$.
+	More formally:
+	
+	$S_n = \sum_{k=1}^{n}(2k - 1) = n^2.$
 
-We can convert these examples into program code like so:
+**Base case**\
+For $n=1$ we have $\sum_{k=1}^{1}(2k - 1) = 1 = 1^2$, which is obviously true.
+
+**Induction step**\
+We have to show $\sum_{k=1}^{n+1}(2k - 1) = (n+1)^2$, where this representation is called the *induction hypothesis*.\
+For that, we express the left hand side *(lhs)* of the induction hypothesis like so:
+$lhs = \sum_{k=1}^{n}(2k - 1) + 2(n+1) - 1$.\
+Then we reshape that expression and show that it is equivalent to the right hand side *(rhs)* of the induction hypothesis.
+For this, we are allowed to use the induction hypothesis like so:\
+$lhs = n^2 + 2(n+1) - 1.$\
+Applying the [binomial formula](https://en.wikipedia.org/wiki/Binomial_theorem), we get
+
+$lhs = n^2 + 2n + 1 = (n+1)^2 = rhs \ \square.$
+
+However, proving a proposition with mathematical induction gives us no clue for finding that formula in the first place, that is, *discovering* and *proving* a formula are completely different tasks.
+
+So, how do we find a "closed form" for solving the expression $\sum_{k=1}^{n}(2k - 1)$, that is, a formula that lets us compute the result quickly, even for large $n$?\
+One way is to *guess* the correct solution and then to prove that our guess is correct.
+Our best hope for guessing the solution is to examine the results of the expression for small cases. 
+We will do that with the help of a Julia function:
 """
 
-# ╔═╡ 4c58357a-7ea3-49bb-930f-1d20788aaf68
-# example 1
-[(a, a^2) for a ∈ 1:10]
-
-# ╔═╡ d25b01e5-5b2f-41f0-a2a2-6d7bdd8936df
-# example 2
+# ╔═╡ 6fc9840a-8178-4539-8f34-9e3c2eeaf14b
 begin
-	n = 144
-	[(d, n ÷ d) for d ∈ 1:n if n%d == 0 && d*d <= n]
+	sofon(n) = sum([2k - 1 for k in 1:n])
+	for n in 1:10
+		@show n, sofon(n)
+	end
 end
 
-# ╔═╡ 9e9c94df-7211-4dfd-ab5f-309c617fa34d
+# ╔═╡ ef05dee5-0386-47de-b46c-3fb0e06f9a55
 md"""
-!!! warning "Definition: Identity and Inverse"
-	1. The **identity** on $A$ is the relation $\Delta_{A} = \{(a,b) \in A^2 \mid a = b\} = \{(a, a) \mid a \in A\}$.
-	2. If $R$ is a relation between $A$ and $B \textrm{ then } R^{-1} = \{(b, a) \mid R_{ab}\}$ is the **inverse** of $R$.
-
-## Functions
-A *function* is something that transforms a given object (the function's *argument*) into another object (the function's *value*).
-The set of allowed arguments is called the *domain* of the function, and the set of its values is called the *range* of the function (note the similarity with *relations*).
-We say that a function is *defined on* its domain.
-
-If $f$ is a function and $x$ one of its arguments, then the corresponding value is denoted by $f(x)$.\
-A function value $y = f(x)$ is called the *image* of $x \textrm{ under } f$.
-Defining the domain of $f$ as $dom(f)$, its range is given by $ran(f) = \{f(x) \mid x \in dom(f)\}$.
-
-We can describe the *rule* of how to carry out the transformation for example like so: $x \mapsto \sqrt{x}$. where $\mapsto$ is read as "*is mapped to*".
-Combining all three parameters of a function into a single definition, we write
-
-$f: \mathbb{N} \to \mathbb{R}, \quad x \mapsto \sqrt{x}$
-
-where the domain of $f$ is the set of natural numbers, its range is the set of real numbers, and its transformation rule reads as: "*map the given argument to its squareroot*".
-If the domain and the range are obvious from the given context, we can define a function with the short version
-
-$f(x) = \sqrt{x}.$
-
-Having that formalism out of the way, we can finally give a definition of the term *function*:
-
-!!! warning "Definition: Function"
-	A **function** is a relation $f$ that satisfies the condition
-
-	$(x,y) \in f \land (x,z) \in f \Rightarrow y = z.$
-
-	That is: for every $x \in dom(f)$ there is *exactly one* $y \in ran(f)$ such that $(x, y) \in f$.
-
-In plain English, the above definition reads as: "*A function is a relation which maps every argument of its domain to exactly one value of its range.*"
-
-Let's illustrate this definition with an *arrow*-diagramm, where each arrow represents a distinct mapping from a set $A$ (domain) to a set $B$ (range):
+It looks as if $S_n = n^2$, at least for $n <= 10$.
+Having a proof with mathematical induction already in place, we can verify that this solution is correct.
 """
 
-# ╔═╡ 95bd6d88-4d12-49fb-a5b8-f8894f4c1b4f
+# ╔═╡ 5ae6e717-b158-4664-bf46-ef6393742203
+md"""
+!!! tip "The sum of the first n numbers"
+	The sum of the first $n$ natural numbers $T_n$ equals $\frac{n(n+1)}{2}$. More formally:
+	
+	$T_n = \sum_{k=1}^n k = 1+2+3+\cdots+n = \frac{n(n+1)}{2}.$
+
+**Base case**\
+We choose $n_0 = 1$ and get $\frac{1(1+1)}{2} = 1$, which is obviously true.
+
+**Inductive step**\
+We formulate the *induction hypothesis* like so:
+
+$\sum_{k=1}^{n+1} k = \frac{(n+1)(n+2)}{2}.$
+
+For the proof we'll expand and reshape the left hand side (*lhs*) of the hypothesis and check whether this leads to the same result as the right hand side (*rhs*) of this
+equation:
+
+$\begin{align}
+lhs &= \sum_{k=1}^n k + n + 1\\
+&= \frac{n(n+1)}{2} + n + 1\\
+&= \frac{n(n+1) + 2(n+1)}{2}\\
+&= \frac{(n+1)(n+2)}{2} = rhs \ \square.
+\end{align}$
+
+The last line of this proof follows from the *distributive law* of algebra:
+$ba + ca = a(b+c)$.
+
+In order to find a closed formula for solving the sum expression, we want to do better than just guessing, which we did for the last example.
+One way to do so, is to employ the concept of [triangular numbers](https://en.wikipedia.org/wiki/Triangular_number), which are a kind of [figurate numbers](https://en.wikipedia.org/wiki/Figurate_number).
+
+A triangular number counts objects arranged in an equilateral triangle.
+The *n*th triangular number is the number of objects in the triangular arrangement with *n* objects on each side, and it's equal to the sum of the *n* natural numbers from 1 to *n*.
+
+Let's inspect the visual representation for $n = 10$:
+"""
+
+# ╔═╡ 02c404ac-8029-4fac-a0e7-62990a947d5f
 begin
-	Drawing(500, 600, "functions.svg")
-	fontface("FreeSans")
-	fontsize(24)
-	setcolor("black")
-	Luxor.text("A", Point(130,50))
-	Luxor.text("B", Point(460,50))
-	Luxor.text("A", Point(130,250))
-	Luxor.text("B", Point(460,250))
-	Luxor.text("A", Point(130,450))
-	Luxor.text("B", Point(460,450))
-	Luxor.text(L"R_1", Point(30, 100))
-	Luxor.text(L"R_2", Point(30, 300))
-	Luxor.text(L"R_3", Point(30, 500))
-	fontsize(20)
+	function trow(n)
+	  points = Array{Point}(undef, n)
+	  for p in 1:n
+	    points[p] = Point(p*25, 0)
+	  end
+	  circle.(points, 10, action = :fill)
+	end
 	
-	A1 = Point(200, 100)
-	B1 = Point(400, 100)
-	A2 = Point(200, 300)
-	B2 = Point(400, 300)
-	A3 = Point(200, 500)
-	B3 = Point(400, 500)
-
-	circle(A1, 60, action=:stroke)
-	circle(B1, 60, action=:stroke)
-	Luxor.text("1", Point(195, 80))
-	Luxor.text("2", Point(195, 140))
-	Luxor.text("3", Point(395, 80))
-	Luxor.text("4", Point(395, 140))
-	Luxor.arrow(Point(210, 135), Point(390, 135))
-
-	circle(A2, 60, action=:stroke)
-	circle(B2, 60, action=:stroke)
-	Luxor.text("1", Point(195, 280))
-	Luxor.text("2", Point(195, 340))
-	Luxor.text("3", Point(395, 280))
-	Luxor.text("4", Point(395, 340))
-	Luxor.arrow(Point(210, 270), Point(390, 270))
-	Luxor.arrow(Point(210, 330), Point(390, 275))
-	Luxor.arrow(Point(210, 335), Point(390, 335))
-
-	circle(A3, 60, action=:stroke)
-	circle(B3, 60, action=:stroke)
-	Luxor.text("1", Point(195, 480))
-	Luxor.text("2", Point(195, 540))
-	Luxor.text("3", Point(395, 480))
-	Luxor.text("4", Point(395, 540))
-	Luxor.arrow(Point(210, 470), Point(390, 470))
-	Luxor.arrow(Point(210, 530), Point(390, 475))
+	function triangle(n)
+	  n == 0 && return
+	  trow(n)
+	  Luxor.translate(0, 25)
+	  triangle(n-1)
+	end
 	
+	Drawing(260, 250, "triangle.svg")
+	Luxor.translate(0, 10)
+	setcolor(0, 0, 0, 0.7)
+	triangle(10)
 	finish()
 	preview()
 end
 
-# ╔═╡ 2a8569e6-b4d2-4fe8-b776-864209482e61
+# ╔═╡ 2c8b5d80-1a66-4d5a-b273-73f9e74d12e5
 md"""
-In the diagram above, $R_1$ is *not* a function, because `1` in $A$ has no arrow exiting it.\
-$R_2$ is also not a function for a different reason: `2` has more than one arrow exiting it.\
-$R_3$ has exactly one arrow exiting each element of $A$, pointing to some element in $B$; thus, it is a function from $A$ to $B$.
+The number of elements in this figure is obviously $T_n = \sum_{k=1}^{10} = 55$.\
+Unfortunately it's not easy to count the elements of a triangle.
+But it would be easy to count the elements of a rectangle, as there is a simple formula to do so: $elems_{rect} = rows_{rect} \times cols_{rect}$.\
+So, the trick is to duplicate the triangle, rotate it by 180 degrees and paste it to the original one, resulting in a rectangle:
 """
 
-# ╔═╡ dab865af-0863-47d0-9c6b-e8bd362494ec
-md"""
-### Functional Features in Julia
-Functions can be defined and called like so in julia:
-"""
-
-# ╔═╡ 0114a7c7-1a0a-43aa-95ea-d15839844c05
+# ╔═╡ 3e22ce56-8a66-4869-bff9-5affede043c4
 begin
-	fun(x) = √x
-	y₂ = fun(2)
-end
-
-# ╔═╡ e3e736aa-78cf-46f1-83b8-11499c681984
-md"""
-This function definition is *equivalent* to a function in a mathematical sense.\
-But this is not necessarily true for *every* function definition:
-a mathematical function has no other effect than transforming its arguments into the function value.
-But a function in a programming language may have additional effects (which are called *side effects*). For example, a function may change the value of a variable not given as an argument. Consider the following code
-"""
-
-# ╔═╡ 418bd0c4-0b1e-4828-be4b-6489dd8c77ba
-begin
-	z = 0
-	function fun2(x)
-		x += z
-		global z += 1
-		return √x
-	end
-	@show fun2(2)
-	z
-end
-
-# ╔═╡ abf6a47a-d9a3-4d6b-90ed-2d3fd952aabc
-md"""
-which defines a function `fun2(x)`, returning the desired function value, but also changing the value of the *global* variable `z`.
-If we call `fun2(2)` a second time, we'll get a different result, violating the property of *referential transparency* (see next info-box):
-"""
-
-# ╔═╡ 67d86c11-ba69-499c-a337-5f34c745ce03
-begin
-	@show fun2(2)
-	z
-end
-
-# ╔═╡ 51b30b48-69ee-4157-a23b-ab35f05534c6
-md"""
-!!! info "Referencial Transparency"
-	Pure functional languages like *Haskell* or *Scheme* do not allow any side effects for a function, since all values are *immutable* in such languages.
-	The only way to transform a value into another value is by calling a function on it, returning the new value, but leaving the original value untouched.
-
-	With that, you can replace the value of a function with a call to that function,
-	without changing the meaning of an expression. That behaviour is called [referential transparency](https://en.wikipedia.org/wiki/Referential_transparency), which is the main criterion of a functional language.
-
-	Julia is *not* a pure functional language, but it is still a good choice for mathematical programming, since it supports a wide range of functional features, some of which we'll explore below.
-	
-As functions with side effects violate the property of *referential transparency* (and thus making analytic reasoning about the function's behaviour very difficult), we'll restrict ourselves to define functions in a mathematical sense only, i.e. we will only define functions that have *no* side effects beside transforming their arguments.
-
-With all that in mind, we can convert the exemplary *relations* from the beginning of this lesson into functions like so:
-"""
-
-# ╔═╡ a3727f76-1f57-417a-8ce3-3700a4ac3a94
-# example 1: map the first 10 natural numbers to their square
-function squares(n) 
-	if isa(n, Int) && n > 0
-		map(a -> a^2, 1:n)
-	else
-		throw("function squares is defined only on natural numbers")
-	end
-end
-
-# ╔═╡ 54f7f4ea-b142-4b82-bcdd-23b3b39e6011
-md"""
-The function `squares` is defined with *traditional* syntax:
-its implementation is enclosed in a function-block, beginning with the keyword `function` and closing with the keyword `end`.\
-The `if-conditional` checks whether the given argument corresponds to the function's *domain*.\
-If not, an *error* is thrown.
-Otherwise ($n \in \mathbb{N}$), the function's value is computed by applying the *higher-order* function `map`.
-
-Higher-order functions are functions that accept other functions as arguments or return other functions as their value.\
-As its name suggests, `map` is a function that maps the given *input-values* (in this case the range `1:n` $= \{m \in \mathbb{N} \mid m \leq n\}$) to their *output-values*.
-The values are transformed by applying another function `a -> a^2`, which is defined as an anonymous function, that is, a function without a name, using the *arrow-syntax*.
-
-Calling `squares` for $n \in \mathbb{N}$ produces the desired result: 
-"""
-
-# ╔═╡ 7a4154d5-3ded-4a47-b5bc-04851345f0c5
-squares(10)
-
-# ╔═╡ afcb47c5-3325-4bde-b135-fc59018b709d
-md"""
-Calling `squares` with $n \notin \mathbb{N}$ causes the function to terminate with an *error*, as the function is not defined on those inputs.
-Remove the comment signs `#` in the following cell and run the cell to see what happens.
-"""
-
-# ╔═╡ e1ce1290-997e-4139-989f-8dd394d38c6c
-# squares(-10)
-# squares(10.5)
-
-# ╔═╡ 80e1fbdb-f612-483e-9da5-d60c10efc213
-md"
-The second example from the *relations* section above was to create all the divisor pairs of $n \in \mathbb{N}$:
-"
-
-# ╔═╡ 6cdd658c-1b4b-4af0-8e93-50d4f054bb82
-divisors(n) = isa(n, Int) && n > 0 ?
-	[(d, n ÷ d) for d ∈ 1:n if n%d == 0 && d*d <= n] :
-	throw("function divisors is defined only on natural numbers")
-
-# ╔═╡ ad1e43ce-f16e-4cb7-9a31-9aaaf8a81bc4
-md"Now we can call `divisors` for every $n \in \mathbb{N}$:"
-
-# ╔═╡ eafa6047-3ec6-4eec-a3a7-180f73adeba9
-divisors(144)
-
-# ╔═╡ f0425772-a078-4a7d-9993-38e31bd6baea
-md"
-We can use the function to create other functions, for example a simple primality test, like so:
-"
-
-# ╔═╡ a3ab3a55-fad8-45ba-9b5c-00e858d74292
-isPrime(n::Int) = divisors(n) == [(1,n)]
-
-# ╔═╡ de04700e-1230-40b7-a575-e34e0c810878
-begin
-	@show isPrime(7)
-	@show isPrime(19)
-	@show isPrime(97)
-	@show isPrime(99)
-end
-
-# ╔═╡ 83d9458f-ff80-49e3-870c-31fc5f7de3a1
-md"""
-### Properties of Functions
-Let's consider some special properties of functions:
-
-!!! warning "Properties of Functions"
-	A function is called 
-	- **surjective** or **onto** if every element of the function's range occurs at least once as a value of that function.
-	- **injective** or **one-to-one** if every element of the function's range occurs at most once as a value of that function.
-	- **bijective** if it is both *surjective* and *injective*, that is, every element of the function's range occurs exactly once as a value of that function.
-
-Let's illustrate these properties with arrow-diagrams:
-"""
-
-# ╔═╡ 2516845b-762f-4060-9bb9-fbe41b605cd4
-begin
-	Drawing(500, 600, "properties.svg")
-	fontface("FreeSans")
-	fontsize(24)
-	setcolor("black")
-	Luxor.text("A", Point(130,50))
-	Luxor.text("B", Point(460,50))
-	Luxor.text("A", Point(130,250))
-	Luxor.text("B", Point(460,250))
-	Luxor.text("A", Point(130,450))
-	Luxor.text("B", Point(460,450))
-	fontface("FreeSerif")
-	fontsize(18)
-	Luxor.text("surjective", Point(20, 100))
-	Luxor.text("injective", Point(20, 300))
-	Luxor.text("bijective", Point(20, 500))
-	
-	As = Point(200, 100)
-	Bs = Point(400, 100)
-	Ai = Point(200, 300)
-	Bi = Point(400, 300)
-	Ab = Point(200, 500)
-	Bb = Point(400, 500)
-
-	circle(As, 60, action=:stroke)
-	circle(Bs, 60, action=:stroke)
-	Luxor.text("1", Point(195, 80))
-	Luxor.text("2", Point(195, 110))
-	Luxor.text("3", Point(195, 140))
-	Luxor.text("4", Point(395, 80))
-	Luxor.text("5", Point(395, 110))
-	Luxor.arrow(Point(210, 75), Point(390, 105))
-	Luxor.arrow(Point(210, 105), Point(390, 80))
-	Luxor.arrow(Point(210, 135), Point(390, 110))
-
-	circle(Ai, 60, action=:stroke)
-	circle(Bi, 60, action=:stroke)
-	Luxor.text("1", Point(195, 280))
-	Luxor.text("2", Point(195, 310))
-	Luxor.text("3", Point(395, 280))
-	Luxor.text("4", Point(395, 310))
-	Luxor.text("5", Point(395, 340))
-	Luxor.arrow(Point(210, 275), Point(390, 305))
-	Luxor.arrow(Point(210, 305), Point(390, 275))
-
-	circle(Ab, 60, action=:stroke)
-	circle(Bb, 60, action=:stroke)
-	Luxor.text("1", Point(195, 480))
-	Luxor.text("2", Point(195, 540))
-	Luxor.text("3", Point(395, 480))
-	Luxor.text("4", Point(395, 540))
-	Luxor.arrow(Point(210, 480), Point(390, 530))
-	Luxor.arrow(Point(210, 530), Point(390, 475))
-	
+	Drawing(285, 250, "rectangle.svg")
+	Luxor.translate(0, 10)
+	setcolor(0, 0, 0, .7)
+	triangle(10)
+	Luxor.rotate(π)
+	Luxor.translate(-300, 25)
+	setcolor(0, 0, 0, .2)
+	triangle(10)
 	finish()
 	preview()
 end
 
-# ╔═╡ cf442ca9-545e-47aa-8338-218de429e7ec
+# ╔═╡ b803c184-b435-420f-9bf7-ce7ab5ec2269
 md"""
-Those *informal definitions* can be translated into *formal definitions* like so:
+Observe that the number of rows of this rectangle is the same as that from the triangle above, but the number of columns has increased by one.
+Therefore, the number of elements in this rectangle is $n \times (n + 1)$, and as we have duplicated the original triangle, we only need the half of it:
 
-A function $f$ from a set $A$ to a set $B$ is **surjective** if and only if for every $b \in B$, there is at least one $a \in A$ such that $f(a) = b$.
+$T_n = \frac{n(n+1)}{2}.$
 
-Following this example, give formal definitions for *injective* and *bijective*.
+Another way to solve the sum expression was found by the German mathematician
+*Carl Friedrich Gauß* at the age of 9.\
+He added all the natural numbers up to $n$ in a line, and in a second line he added them again, but in reverse order.
+Finally, he added both lines like so:
 
-!!! hint "Properties of Functions: Formal Definitions"
-	A function $f$ from a set $A$ to a set $B$ is
-	- **surjective** if and only if for every $b \in B$, there is at least one $a \in A$ such that $f(a) = b$.
-	- **injective** if and only if for every $b \in B$, there is at most one $a \in A$ such that $f(a) = b$.
-	- **bijective** if and only if for every $b \in B$, there is exactly one $a \in A$ such that $f(a) = b$.
+$\begin{align}
+1 + 2 &+ \dots + (n-1) + n &= T_n\\
+n + (n-1) &+ \dots + 2 + 1 &= T_n\\
+(n+1) + (n+1) &+ \dots + (n+1) + (n+1) &= 2T_n
+\end{align}$
 
-Finally, we could give definitions with *logical* expressions, using *quantifiers* like so:
+How many times does $(n+1)$ appear in the last line?
+The first line shows that the answer is $n$. Hence $n(n+1) = 2T_n$, leading to
 
-$surjective(f_{A \to B}) \Leftrightarrow (\forall b \in B) (\exists a \in A(f(a) = b))$
-
-which reads as "*$f_{A \to B}$ is surjective if and only if for all $b \in B$ there exists at least one $a \in A$, such that $f(a) = b$*".
-
-Following this example, give a logical definition for *injective*:
-
-!!! hint "Properties of Functions: Logical Definitions"
-	A function $f: A \to B$ is
-	- **surjective** $\Leftrightarrow (\forall b \in B) (\exists a \in A(f(a) = b))$
-	- **injective** $\Leftrightarrow (\forall a_1,a_2 \in A) (f(a_1) = f(a_2) \Rightarrow a_1 = a_2)$
-
-Most functions are neither *surjective*, nor *injective*.
-
-!!! tip "Ordinary Functions"
-	- The function $sin: \mathbb{R} \to \mathbb{R}$ is not *surjective* (e.g. $2 \in \mathbb{R}$ is not a value) and not *injective*, since $sin(0) = sin(\pi)$
-	- The function $f: \mathbb{R} \to \mathbb{R}, \ x \mapsto x^2$ is not *surjective* (e.g. $-2 \in \mathbb{R}$ is not a value) and not *injective*, since $f(2) = f(-2)$
+$T_n = \frac{n(n+1)}{2}.$
 """
 
-# ╔═╡ 43d9147f-2bad-4653-9a33-b368e67a6882
+# ╔═╡ 918847f2-efdc-4934-a01f-b0e147926585
 md"""
-There is a simple way of checking visually, whether a given function is *surjective*, *injective* or *bijective*.
-For that, we place horizontal lines on a function's graph, and check wether these lines intersect the graph:
-- if there is a line, intersecting the graph at more than one point, the function is *not injective*, as there is a *y*-value that has multiple *x*-values mapped to it 
-- if there is a line, which doesn't intersect the graph at all, then the function is *not surjective*, as there is no value of the function for this *y*
-- if every horizontal line intersects the graph in exactly one point, the function is *bijective*.
+Now, having introduced the concept of *figurate numbers*, let's use this for finding the solution for the last example $S_n = \sum_{k=1}^{n}(2k - 1) = n^2$, which we have solved only by guessing so far.
+
+We can represent $n^2$ as a [square number](https://en.wikipedia.org/wiki/Square_number).
+A number $m$ is a *square number* if and only if *m* elements can be arranged in a square, that is $m = n^2$, where $n$ is the side length of the square.
+Thus, the figure below illustrates all the square numbers $S_n$ for $\{n \in \mathbb{N} \mid n \leq 10\}$, starting at the upper right corner of the main square.
+The squares of odd numbers are shown with dark circles, while the squares for even numbers are shown with light circles.
 """
 
-# ╔═╡ bfcdaef5-3c65-46bf-9631-35203ce27bfa
-md"""
-### Function Composition
-
-!!! warning "Function Composition"
-	Let $f: A \to B$ and $g: B \to C$ two functions, where the range of $f$ matches the domain of $g$.
-	Then the **composition** of $f$ and $g$ is the function $g \circ f: A \to C$ defined by
-	
-	$(g \circ f)(a) = g(f(a)),$
-	which reads "*$g$ after $f$*", meaning "*first apply $f$, then apply $g$*".   
-
-!!! tip "Example for Composition"
-	Let $f: \mathbb{R} \to \mathbb{R^+}, \ x \mapsto x^2 + 1 \textrm{ and } g: \mathbb{R^+} \to \mathbb{R}, \ x \mapsto \sqrt{x}$ then
-
-	$g \circ f: \mathbb{R} \to \mathbb{R} \textrm{ is } x \mapsto \sqrt{x^2 + 1}.$
-
-We can express that example in julia like so:
-"""
-
-# ╔═╡ d09057df-29bc-4439-a561-654ea47a8cf2
+# ╔═╡ 5e1f8525-8d6e-4faf-8e34-8a0272b31e4d
 begin
-	f(x) = x^2 + 1
-	g(x) = √x
-	map(g ∘ f, [1, 1.2, 1.3, 2, 2.5]) # type \circ<tab> for getting the composition
+	function srow(n,r)
+		if r%2 == 1
+			for p in 1:n
+				(p%2 == 1 && p <= (n-r)) ?
+					setcolor(0, 0, 0, .2) :
+					setcolor(0, 0, 0, .7)
+				circle(Point(p*25, 0), 10, action=:fill)
+			end
+		else
+			for p in 1:n
+				(p%2 == 1 || p > (n-r)) ?
+					setcolor(0, 0, 0, .2) :
+					setcolor(0, 0, 0, .7)
+				circle(Point(p*25, 0), 10, action=:fill)
+			end
+		end
+	end
+
+	function square(n)
+		for r in 1:n
+			srow(n,r)
+			Luxor.translate(0, 25)
+		end
+	end
+	
+	Drawing(260, 250, "square.svg")
+	setcolor("black")
+	Luxor.translate(0, 10)
+	square(10)
+	finish()
+	preview()
 end
 
-# ╔═╡ 59cda445-5a5a-4cda-ac77-51591d85bd46
+# ╔═╡ 95d5ef99-7634-48ef-b07a-8469af335335
 md"""
-!!! danger "Corollary 1: Expressing Functions as Compositions"
-	The **identity** function $1_A$ on a set $A$ does not transform its arguments: given an argument $a \in A$, it outputs $a$ itself. Let $f: A \to B$ a function. Then we can express $f$ with the identity functions of $A$ and $B$:
+Representing the dark and light circles as triangular numbers, we see a distinct relation between their triangular and square number arrangement:
+$T_{n-1} + T_n = n^2.$
+"""
+
+# ╔═╡ 2a6c367c-531a-4b16-a8d9-224e5c177031
+begin
+	Drawing(225, 200, "relation.svg")
+	Luxor.translate(0, 10)
+	setcolor(0, 0, 0, 0.7)
+	triangle(7)
+	Luxor.rotate(π)
+	Luxor.translate(-225, 0)
+	setcolor(0, 0, 0, .2)
+	triangle(8)
+	finish()
+	preview()
+end
+
+# ╔═╡ c57c16a7-dea8-4b44-87cc-2bde733b4bfb
+md"""
+Let's examine one last example:
+
+!!! tip "The sum of the first n squares"
+	The sum of the first $n$ square numbers $Te_n$ is given by the formula:
 	
-	$f \circ 1_A = 1_B \circ f = f.$
+	$Te_n = \sum_{k=1}^{n}k^2 = \frac{n(n+1)(2n+1)}{6}.$
 
-!!! danger "Lemma 2: Properties of Compositions"
-	Let $f: A \to B$ and $g: B \to C$. Then
-	1. $injective(g \circ f) \Rightarrow injective(f)$
-	2. $surjective(g \circ f) \Rightarrow surjective(g)$
+Before giving the proof, let's have a look on some facts about this sum formula:
+- the sum formula $\sum_{k=1}^{n}k^2$ represents another *figurate number*, called [tetrahedral number](https://en.wikipedia.org/wiki/Tetrahedral_number)
+- it represents a pyramid with a triangular base and three sides, called a [tetrahedron](https://en.wikipedia.org/wiki/Tetrahedron)
+- The $n$th tetrahedral number, $Te_n$, is the sum of the first $n$ triangular numbers, that is,  
+$Te_n = \sum_{k=1}^{n}k^2 = \sum_{k=1}^{n}\frac{k(k+1)}{2} = \sum_{k=1}^{n}\left(\sum_{i=1}^{k}i\right).$
 
-##### Proof for Lemma 2.1
-1. **Given**: $injective(g \circ f)$, i.e. $(g \circ f)(a_1) = (g \circ f)(a_2) \Rightarrow a_1 = a_2$
-2. **To be proved**: $injective(f)$, i.e. $f(a_1) = f(a_2) \Rightarrow a_1 = a_2$
-3. **Proof**: Assume $f(a_1) = f(a_2)$. Then $g(f(a_1)) = g(f(a_2))$, since applying $g$ twice to the same argument must produce the same value. But then, $(g \circ f)(a_1) = g(f(a_1)) = g(f(a_2)) = (g \circ f)(a_2)$. The given now shows that $a_1 = a_2. \square$
+**Base case**\
+For $n_0 = 1$, we get $Te_1 = \frac{1 \cdot 2 \cdot 3}{6} = 1$.
 
-##### Proof for Lemma 2.2
-1. **Given**: $surjective(g \circ f)$
-2. **To be proved**: $surjective(g)$, i.e. $(\forall c \in C) (\exists b \in B(g(b) = c))$
-3. **Proof**: Assume $c \in C$. Wanted: $b \in B$ such that $g(b) = c$. Since $g \circ f$ is surjective, there is a $a \in A$ such that $(g \circ f)(a) = c$. But, $g(f(a)) = (g \circ f)(a)$, thus $b = f(a)$ is the element looked for. $\square$
+**Inductive step**\
 
+$\begin{align}
+Te_{n+1} &= Te_n + T_{n+1}\\
+&= \frac{n(n+1)(2n+1)}{6} + \frac{(n+1)(n+2)}{2}\\
+&= (n+1)(n+2)\left(\frac{n}{6} + \frac{1}{2} \right)\\
+&= \frac{(n+1)(n+2)(n+3)}{6}\\
+&= \frac{n(n+1)(2n+1)}{6} \ \square.
+\end{align}$
+
+For this example we're not interested in how to find that closed formula.
+Instead, we're going to explore the effects of replacing the (recursive) sum formula with the closed form of the formula for computing the actual results for a given *n*.
+For that, we define two distinct functions and compare their running time via some benchmarks:
 """
 
-# ╔═╡ 289a68de-df86-4e1b-8fe1-5553ec1d8e3b
+# ╔═╡ 97fbdfdc-9400-4b45-bc0a-470bf6178e2c
+begin
+	# recursive definition
+	sumRecursive(n::Int) = sum([k^2 for k in 1:n])
+	# closed formula
+	sumClosed(n::Int) = div(n * (n+1) * (2n + 1), 6)
+	for n in [10, 100, 1000]
+		@assert sumRecursive(n) == sumClosed(n)
+	end
+end
+
+# ╔═╡ 671bd3cb-e081-4e72-91b6-49bc614b985c
 md"""
-### Inverse of a Function
-
-Let $f: A \to B$ a relation.
-Then the *relational inverse* of $f$ is the set of all pairs $(b, a)$ with $(a, b) \in f$.
-
-However, there is no guarantee that the relational inverse of a function is again a function.\
-In case $f$ is injective, we know that the inverse of $f$ is a *partial function* (some elements of the domain may not have an image).
-If $f$ is also surjective, we know that its inverse is also a function, since all elements of the domain now have an image.
-These observations lead to the following theorem:
-
-!!! danger "Theorem 3: Inverse of a Function"
-	1. A function has at most one inverse.
-	2. A function has an inverse if and only if it is bijective.
-	3. A function $h_{B \to A}$ is the inverse of a function $f_{A \to B}$ if $h \circ f = 1_A$ and $f \circ h = 1_B$.
-	4. If a function $f$ is a bijection, its unique inverse is denoted by $f^{-1}$.
-
-##### Proof for Theorem 3
-Let $f: A \to B$ a function.\
-(1.) Suppose that $g$ and $h$ are both inverses of $f$. Then, from *Corollary 1* follows
-
-$g = 1_B \circ g = (h \circ f) \circ g = h \circ (f \circ g) = h \circ 1_A = h. \square$
-
-(2.) Assume that $g$ is the inverse of $f$. Then, since $g \circ f = 1_A$ is injective, by *Lemma 2.1* $f$ is also injective.
-Since $f \circ g = 1_B$ is surjective, by *Lemma 2.2* $f$ is also surjective.
-
-(3.) Suppose that $f$ is a bijection, i.e. for every $b \in B$ there is exactly one $a \in A$ such that $f(a) = b$.
-Thus, we can define a function $h: B \to A$ by letting $h(b)$ be the unique $a$ such that f$(a) = b$.\
-Then $h$ is the inverse of $f$: firstly, if $a \in A$, then $h(f(x)) = x$;
-secondly, if $b \in B$, then $f(h(b)) = b$.
+If we don't get any errors from the `@assert` macro above, then both functions indeed return the same result for a given *n*.\
+Performing some benchmarks for the recursive definition,
 """
 
-# ╔═╡ c87611e5-4e20-49d0-bbbd-deebb6ba7b40
+# ╔═╡ a012258f-e65b-41ab-be79-cffcc837b2d8
+@btime sumRecursive(10)
+
+# ╔═╡ 94faa5d5-0bf5-4d42-80ec-fa3a81102a33
+@btime sumRecursive(100)
+
+# ╔═╡ 1d8ac2b9-1100-4a35-baaf-d8b14e18807d
+@btime sumRecursive(1000)
+
+# ╔═╡ 42f0052c-79e4-471d-91c6-4b5074391b0e
+md"""
+we see that, with growing *n*, the running time of the algorithm also grows with a similar rate.
+As the algorithm has to iterate over all natural number from 1 up to *n*, we call this a *linear* running time, denoted with $\Theta (n)$ in *asymptotic notation*.\
+If you are not familiar with asymptotic notation, please have a look at the next section, where we'll explore the basics of how to determine the running time of an algorithm.
+
+Now, let's do the same for the closed-form algorithm:
+"""
+
+# ╔═╡ eb70769a-5b28-48d8-baca-90ab16beb7b1
+@btime sumClosed(10)
+
+# ╔═╡ 6aebe83e-0e33-457b-b73e-79059f79cd97
+@btime sumClosed(100)
+
+# ╔═╡ 827976d7-f93a-4d26-9fc0-652c142fad5f
+@btime sumClosed(1000)
+
+# ╔═╡ 48be45cc-2a02-4cd1-94f5-447a99ece868
+md"""
+Observe that not only the running time of this algorithm is much smaller (i.e. it's about 30 times faster, even for a small $n=10$), it also remains constant for a growing *n*.
+We call this a *constant* running time, denoted as $\Theta(1)$.\
+Also observe that this improved algorithm, in contrast to the recursive algorithm, doesn't need to allocate memory on the programs heap, thus it also shows a constant *space complexity*.
+
+"""
+
+# ╔═╡ 6a509eb7-dde7-4f56-974e-89d100ed3cf2
+md"""
+## Interlude: Running Time of Algorithms
+
+Whenever we're reasonating about the efficiency of algorithms, we're using *asymptotic notation* for doing so.
+The key idea is to consider the complexity of an algorithm in terms of its *running time* for a big input value, that is for $n \to \infty$.
+
+In particular, we express the running time as a function of $n$, where the function value is denoted is a polynom of $n$, calculating the necessary steps the algorithm has to perform in order to produce the desired result, for example
+
+$g(n) = a * n^2 + b * n + c \ , \quad \textrm{ for } n \to \infty.$
+
+In this case that's a polynomial of second degree (a quadratic polynomial), as $n$ occurs with its highest power of 2.
+When $n$ is getting bigger, the term with the highest power of $n$ is most signifant,
+so we just neglect all other terms, leading to
+
+$g(n) = c * n^2$
+
+where $c$ is some constant value, which we can neglect likewise.
+Finally, we can do without the function name if we mark the term with a special symbol
+$\mathcal{O}$, leading to the so called *big O notation*, for our example
+
+$\mathcal{O} (n^2),$
+
+which reads as: "*in the order of n square*".
+
+#### Asymptotic Notation
+
+Actually, there are three different symbols being used for denoting the asymptotic
+complexity of an algorithm, each of them with a slightly different meaning:
+
+- *Big O* ($\mathcal{O}$): denotes the complexity as an upper limit, that is, the algorithm will need at most this number of steps to complete, sometimes significantly less
+- *Theta* ($\Theta$): denotes the given term as an upper *and* a lower limit, i.e. the algorithm will always take this number of steps
+- *Omega* ($\Omega$): denotes a lower limit, i.e. the algoritm will use at least this number of steps, sometimes significantly more.
+
+There are a number of standard complexity classes, which will usually be sufficient to
+describe the complexity.
+They are, from most to least efficient:
+
+- *constant*: $\Theta (1)$ 
+- *logarithmic*: $\Theta (\log n)$: 
+- *linear*: $\Theta (n)$ 
+- *loglinear*: $\Theta (n \log n)$ 
+- *quadratic*: $\Theta (n^2)$
+- *exponential*: $\Theta (2^n)$
+
+Problems of the last category belong to the class of *NP* problems, which cannot be solved deterministically in polynomial time.
+On the other hand, all non-NP problems are belived to be solvable in a running time of $\mathcal{O} (n^3)$ or less.
+
+Let's illustrate the growth rates of these complexity classes:
+"""
+
+# ╔═╡ df48e493-30a6-41bd-857f-79a5a9c6b90c
+begin
+	n = range(0, 100, length=101)
+	loglinear(n) = n * log(n)
+	
+	plot(n, [log.(n), n],
+	title="Growth of functions of n",
+	label=[L"\log{n}" "n"],
+	xlabel=("n"),
+	ylabel=("f(n)"),
+	linewidth=2)
+	
+	plot!(n, loglinear.(n), label=L"n \log n", ylims=(0, 100), linewidth=2)
+	plot!(n, x -> x^2, label=L"n^2", legend=:outerbottom, legendcolumns=4, linewidth=2)
+end
+
+# ╔═╡ 6ab7723c-c16f-46ee-b5d3-3b3ef5b88fdb
+md"""
+## Recursive Definitions
+
+To understand *recursion*, you must first understand [recursion](https://www.google.com/search?channel=fs&q=recursion).
+
+A perhaps more helpful example:
+!!! tip "How many twists does it take to screw in a light bulb?"
+	1. Is it already screwed in? Then zero.
+	2. If not, then twist it once, ask me again, and add 1 to my answer.
+
+The answer reveals the nature of recursion; it consists of two steps, where the first step is called the *base case*, and the second one is the *recursive step*:
+1. **base case**: produces a trivial result and stops the computation
+2. **recursive step**: the procedure is called again with an ever increasing or decreasing parameter.
+
+In order to avoid infinite loops, the recursive step must modify the input value in such way that eventually the base case is reached.
+
+As it turns out, recursion is especially suited to solve problems defined as a *recurrence relation*.
+!!! warning "Recurrence Relation"
+	A **recurrence relation** is an equation that expresses each element of a *sequence* as a function of the preceding ones.
+	It is defined in the form
+
+	$R_n = f(n, R_{n-1}), \quad \textrm{for } n > 0$
+
+	where $f: \mathbb{N} \times X \to X$ is a function where $X$ is the set to which the elements of the sequence must belong.
+	For any $R_0 \in X$, this defines a unique sequence with $R_0$ as its first element, called the *initial value*.
+
+Let's look at an example:
+
+!!! tip "Factorial"
+	The **factorial** $n!$ is defined by the recurrence relation
+
+	$\begin{align}
+	0! &= 1\\
+	n! &= n * (n-1)!
+	\end{align}$
+
+which translates directly into a recursive function definition:
+"""
+
+# ╔═╡ ca9ae417-c56f-492a-ab5c-0e9cd0df8728
+begin
+	function facRec(n)
+		if n == 0
+			return 1
+		else
+			return n * facRec(n-1)
+		end
+	end
+	
+	for n in 1:5
+		@show n, facRec(n)
+	end
+end
+
+# ╔═╡ 8b30de72-2b64-48e3-953a-caf82334eab4
+md"""
+The function `facRec` is an example for a *linear recursive process*, i.e. its running time is $\Theta(n)$.
+
+However, we can take a different perspective on computing factorials.
+We could desrcibe a rule for computing $n!$ by specifying that we first multiply 1 by 2, then multiply the result by 3, then by 4, and so on until we reach $n$.
+More formally, we maintain a running product, together with a counter that counts from 1 up to $n$ and stipulating that $n!$ is the value of the product when the counter exceeds $n$.
+"""
+
+# ╔═╡ 8b1ba980-9f15-4465-baef-0bfe66033984
+begin
+	function facIter(n)
+		function iter(product, counter)
+			if counter > n
+				product
+			else
+				iter(counter * product, counter + 1)
+			end
+		end
+		iter(1, 1)
+	end
+	
+	for n in 1:5
+		@assert facIter(n) == facRec(n)
+	end
+end
+
+# ╔═╡ d2449cd0-ecdc-4293-addd-983a0e017552
+md"""
+The function `facIter` is an example for a *linear iterative process*, i.e. its running time is also $\Theta(n)$.
+
+Comparing the two processes, they seem hardly different at all.
+Both compute the same mathematical function on the same domain, and each requires a number of steps proportional to $n$ to compute $n!$.
+Indeed, both processes even carry out the same sequence of multiplications, obtaining the same sequence of partial products.
+
+However, they lead to quite different "shapes" of how the processes are executed within a program.
+The recursive process is executed like so:
+
+	factRec(5)
+	5 * factRec(4)
+	4 * 5 * factRec(3)
+	3 * 4 * 5 * factRec(2)
+	2 * 3 * 4 * 5 * factRec(1)
+	1 * 2 * 3 * 4 * 5 * factRec(0)
+	2 * 3 * 4 * 5 * (1 * 1)
+	3 * 4 * 5 * (2 * 1)
+	4 * 5 * (3 * 2)
+	5 * (4 * 6)
+	5 * 24
+	120,
+
+while the iterative process is executed like this:
+
+	facIter(5)
+	iter(1, 1)
+	iter(1, 2)
+	iter(2, 3)
+	iter(6, 4)
+	iter(24, 5)
+	iter(120, 6)
+	120.
+
+The recursive process grows and shrinks during execution, as it has to maintain its current state in terms of the value of a function call.
+The longer the chain of recursive function calls, the more information must be maintained.
+A program stores this information on its *stack*, a [LIFO](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) datastructure, which grows proportional to the number of recursive calls.
+
+On the other hand, the iterative process does not grow and shrink, and it keeps track of the current state solely with the variables for `product` and `counter`.
+Thus, the *stack space* used for this process stays constant with growing $n$. 
+
+We must be careful not to confuse the notion of a recursive *process* with the notion of a recursive *function*.
+Both of the processes above are implemented with a recursive *function* (i.e. a function that calls itself), but only `facRec` leads to a recursive *process*, whereas `facIter` leads to an iterative process, which is preferable in general, because of its *constant* space complexity.
+
+With an *imperative* language like Julia, allowing *mutable* variables, we are able to substitute the recursive function definition with an *iterative loop*, maintaining the *iterative process*:
+"""
+
+# ╔═╡ 489ba4d3-3f02-4ad4-a8c0-7619c4dacd70
+begin
+	function facImp(n)
+		counter = 1
+		product = 1
+		while counter <= n
+			product *= counter
+			counter += 1
+		end
+		product
+	end
+	for n in 1:5
+		@assert facImp(n) == facIter(n)
+	end
+end
+
+# ╔═╡ e2d73c9f-8399-4c34-bded-4175d154a286
+md"""
+Now, let's examine the perfomance of our functions with some benchmarks:
+"""
+
+# ╔═╡ 6030bde8-a610-4703-936c-0a9a12c29505
+@btime facRec(20)
+
+# ╔═╡ 32c7bd76-1c8d-4471-810d-d03d245e17d6
+@btime facIter(20)
+
+# ╔═╡ 0e1e9caa-6970-470b-9d12-9157cbfa4722
+md"""
+Notice that the recursive function is much faster (more than 10 times) than the iterative function.
+Looking at the memory allocations, we can see that the iterative version stores intermediate results in the programs *heap*, leading to a less performant execution path.\
+The julia compiler is not able to [inline](https://docs.julialang.org/en/v1/base/base/#Base.@inline) calls to recursive functions, which we can check with the help of the `@code-typed` macro:
+"""
+
+# ╔═╡ 31acc697-21c8-4df1-a598-d29f6d7f66d8
+@code_typed optimize=true facIter(20)
+
+# ╔═╡ cb4c8e2e-9b60-4df4-bba2-e7d28f3e88ee
+md"""
+Here we can see that the result `%9` is actually computed as a call to a function `%8` with the parameters `(1, 1)`, which in turn evaluates the expression `%1`, representing the inner function `iter`, stored as a *boxed* object in the program's heap.\
+Let's compare this to the imperative version
+"""
+
+# ╔═╡ 627d75cd-802f-49df-9a5f-8e20cc918496
+@btime facImp(20)
+
+# ╔═╡ a9797347-0a67-4b70-a1a2-ea90d6a83b1b
+md"""
+which is now much faster than the recursive version (also by a factor of 10).\
+Looking at its implementation details, we can see why:
+"""
+
+# ╔═╡ dd130192-6f03-4a12-ae3c-a21cf4f04093
+@code_typed optimize=true facImp(20)
+
+# ╔═╡ 54feffb2-3404-4667-bdd0-c36f0e965aea
+md"""
+The function just executes the loop, employing only 2 `goto` statements, where the intermediate values are stored as simple integer variables on the program's stack.\
+So, with an imperative language like Julia, the most efficient way to implement *recurrence relations* is to choose an iterative process, implemented via loops.
+
+However, in a pure functional programming language, where we couldn't implement an imperative version (i.e. we'd have to rely on recursive functions), the execution of both processes will depend on the capability of the compiler to optimize [tail-recursive](https://en.wikipedia.org/wiki/Tail_call) calls.
+
+Benchmarking the following implementations in Haskell for $n = 100$
+
+```{haskell}
+facRec :: Integer -> Integer
+facRec 0 = 1
+facRec n = n * facRec (n-1)
+
+facIter :: Integer -> Integer
+facIter n = iter 1 1
+  where
+    iter product counter
+      | counter > n = product
+      | otherwise   = iter (counter * product) (counter + 1)
+```
+
+shows that both the *recursive* and the *iterative* process are being optimized into machine code with comparable efficiency:
+
+	benchmarking facRec
+	mean                 2.023 μs   (2.021 μs .. 2.024 μs)
+
+	benchmarking facIter
+    mean                 2.122 μs   (2.120 μs .. 2.124 μs)
+
+Let's look at another canonical example:
+
+!!! tip "Fibonacci Sequence"
+	The [Fibonacci Sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) is defined by the recurrence relation
+
+	$\begin{align}
+	F_0 &= 0\\
+	F_1 &= 1\\
+	F_n &= F_{n-1} + F_{n-2}, \quad \mathrm{for} \ n > 1.
+	\end{align}$
+
+	That is, every Fibonacci number is the sum of its two predecessors.
+
+which translates directy into this recursive definition:
+"""
+
+# ╔═╡ d91101a2-d2a7-45fe-9dd6-7ca223bf9d52
+begin
+	fibRec(n) = (n <= 1) ? n : fibRec(n-1) + fibRec(n-2)
+	fibRec(10)
+end
+
+# ╔═╡ 37f4196c-0fa3-474d-8ac9-5517e5546897
+md"""
+While this function will work and eventually produce the correct value, it shows a very poor performance: it employs *multiple recursion* as it contains two self-references, leading to an exponential running time and space.
+
+One way to avoid exponential growth is to use a technique called *memoization*:
+the function checks whether the input value has been calculated previously.
+If so, it is simply returned; if not, the value is calculated recursively,
+stored and returned.
+This leads to a *linear recursive process*.
+"""
+
+# ╔═╡ 6133cc2a-c768-41c4-87d5-a717bc34b449
+begin
+	global cache = Dict{Int, Int}(0 => 0, 1 => 1)
+	
+	function fibMem(n)
+	  	get!(cache, n) do
+	    	fibMem(n-1) + fibMem(n-2)
+	  	end
+	end
+
+	fibMem(10)
+	sort(cache)
+end
+
+# ╔═╡ 42c1ed7e-2eb1-4bbb-aca7-9fd0c9d785ff
+md"""
+The second method for efficiently computing $F_n$ is a *linear iteration*.
+Having learned the lesson about inlining recursive calls in Julia, we're using an imperative loop for this task straightaway:
+"""
+
+# ╔═╡ a3cddb5c-ee9a-4e43-9cbc-b4abf14b01be
+begin
+	function fibIter(n)
+		a, b = 0, 1
+		counter = 1
+		while counter < n
+			a, b = b, a+b
+			counter += 1
+		end
+		b
+	end
+
+	for n in 1:10
+	@assert fibIter(n) == fibMem(n)
+	end
+end
+
+# ╔═╡ e78b6cdf-f8d0-4f6d-86f1-090986cd93fd
+@btime fibMem(100)
+
+# ╔═╡ 83e5b18e-910e-4c5b-9ae3-64126e08cabf
+@btime fibIter(100)
+
+# ╔═╡ 81f0e921-2376-4d76-ad31-2157f82caa1b
+md"""
+Again, the imperative version is about 10 times faster than the recursive version.\
+An efficient solution with Haskell could be implemented like so:
+
+```{haskell}
+fibIter :: Int -> [Int]
+fibIter n = take n $ fibSeq 1 1
+  where fibSeq a b = a:fibSeq b (a+b)
+```
+
+yielding the sequence up to the $n$th Fibonacci number:
+
+	ghci> fibIter 10
+	[1,1,2,3,5,8,13,21,34,55]
+"""
+
+# ╔═╡ 7a29c871-cae6-445f-be51-846ddf57a668
+md"""
+Although there is a closed formula for computing the $n$th Fibonacci number, we will not explore it until the lesson about *Sequences* of the class *Real Analysis*.
+"""
+
+# ╔═╡ 6b3b197b-e468-4044-bd17-542314908b84
+md"""
+## The Tower of Hanoi
+The [Tower of Hanoi](https://en.wikipedia.org/wiki/Tower_of_Hanoi) puzzle, invented by the French mathematician *Èdouard Lucas* in 1883, is the canonical example for solving a problem with recursion.\
+We are given a tower of eight disks, initially stacked in decreasing size on one of three pegs.
+The objective is to transfer the entire tower to one of the other pegs, moving only one disk at a time and never moving a larger one onto a smaller.
+
+
+![Tower of Hanoi Animation with 4 disks](https://upload.wikimedia.org/wikipedia/commons/6/60/Tower_of_Hanoi_4.gif)
+
+### Number of Moves
+Before actually solving the problem, let's first try to answer the question
+
+	How many moves are necessary and sufficient to perform the task?
+
+In order to answer that question we *generalize* the problem and define $T_n$ as the minimum number of moves required to solve the problem, where $n$ is the number of disks of the initial tower.
+Then $T_1$ is obviously $1$, and $T_2 = 3$.\
+Considering the smallest case of all, clearly $T_0 = 0$, because no moves at all are needed to transfer a tower with $n = 0$ disks.
+But how can we transfer a larger tower?
+
+Experiments with three disks show that the idea is to transfer the top two disks to the middle peg, then move the third, then bring the other two onto it.
+This gives us a clue for transferring $n$ disks in general: we first transfer the $n-1$ smallest to a differnt peg (requiring $T_{n-1}$ moves), then move the largest (requiring one move), and finally transfer the $n-1$ smallest onto the largest (requiring another $T_{n-1}$ moves).
+Thus, we can transfer $n$ disks in at most $2T_{n-1} + 1$ moves:
+
+$T_n \leq 2T_{n-1} + 1, \quad \textrm{for } n > 0.$
+
+Observe, that this formula uses $\leq$ insead of $=$ because our construction proves only that $2T_{n-1} + 1$ moves *suffice*; but we haven't shown that $2T_{n-1} + 1$ moves are *necessary*.\
+But *is* there a better way? Actually no. At some point we must move the largest disk.
+When we do, the $n-1$ smallest must be on a single peg and it has taken at least $T_{n-1}$ moves to put them there.
+After moving the largest disk we must transfer the $n-1$ smallest disks (which must again be on a single peg) back onto the largest; this too requires at least $T_{n-1}$ moves. Hence
+
+$T_n \geq 2T_{n-1} + 1, \quad \textrm{for } n > 0.$
+
+These two inequalities, together with the trivial solution for $n=0$ yield the recurrence relation
+
+!!! tip "Minimal number of moves for solving the Tower of Hanoi"
+
+	$\begin{align}
+	T_0 &= 0\\
+	T_n &= 2T_{n-1} + 1, \quad \mathrm{for} \ n > 0.
+	\end{align}$
+"""
+
+# ╔═╡ 13e2636e-c971-4c4b-b2df-8fabdc3f7f77
+md"""
+We can find a closed formula for this recurrence by making an educated guess, based on the results for small cases:
+"""
+
+# ╔═╡ 0c649fca-f86d-453f-bf02-7b707789fe88
+begin
+	numOfMoves(n) = n == 0 ? 0 : 2 * numOfMoves(n-1) + 1
+	for n in 1:10
+		@show n, numOfMoves(n)
+	end
+end
+
+# ╔═╡ 4f143dbe-7a32-48f7-8ef9-7a0504426be3
+md"""
+It certainly looks as if
+
+$T_n = 2^n - 1, \quad \textrm{for } n \geq 0.$
+
+Let's prove that formula with *mathematical induction*:\
+**Base case**\
+For $n_0 = 0$ we get $2^0 - 1 = 1 - 1 = 0$, which is correct.
+
+**Inductive step**\
+For this problem we replace $n \textrm{ with } n - 1$ and get
+
+$\begin{align}
+T_n &= 2T_{n-1} + 1\\
+&= 2(2^{n-1} - 1) + 1\\
+&= 2^n - 2 + 1\\
+&= 2^n - 1 \ \square.
+\end{align}$
+
+Having found the correct solution for the recurrence relation, we can now think of a way of solving it without beeing *clairvoyant*.
+As it turns out, the recurrence can be simplified by adding $1$ to both sides of the equations:
+
+$\begin{align}
+T_0 + 1 &= 1\\
+T_n + 1 &= 2T_{n-1} + 2, \quad \mathrm{for} \ n > 0.
+\end{align}$
+
+Now if we let $U_n = T_n + 1$, we have
+
+$\begin{align}
+U_0 &= 1\\
+U_n &= 2U_{n-1}, \quad \mathrm{for} \ n > 0.
+\end{align}$
+
+It doesn't take genius to discover that the solution to *this* recurrence is just $U_n = 2^n$; hence
+
+$T_n = 2^n - 1.$
+"""
+
+# ╔═╡ 48f39949-ccce-4af0-ab02-458af6266f35
+md"""
+### Solving the Puzzle
+
+In order to actually solve the puzzle, we need a way to compute all the needed moves in the correct order.
+For this, we're using the same idea that we had developed for counting the moves:
+
+1. move the ($n-1$) smallest disks from the *starting* tower to the *temporary* tower
+2. move the largest disk from *start* to *goal*
+3. move the ($n-1$) smallest disks from *temp* to *goal*.
+
+But how can we put that plan into action, that is, how can we derive an algorithm that creates all the necessary moves?
+Well, actually we don't have to.
+The desrciption above *is* the algorithm, and we use *recursion* to implement it like so:
+"""
+
+# ╔═╡ 859e1849-5079-4a3d-a5bf-5db06be47483
+begin
+	global moves = []
+
+	function solve(n, start, temp, goal)
+		n == 0 && return
+		solve(n-1, start, goal, temp)
+		push!(moves, "$start -> $goal")
+		solve(n-1, temp, start, goal)
+	end
+
+	solve(3, "start", "temp", "goal")
+	moves
+end
+
+# ╔═╡ a397469b-9d79-4d15-8a74-ac6348e879db
+md"""
+The first recursive call of `solve` pushes ($n-1$) disks from *start* to *temp*, using *goal* as the intermediate tower.
+The second recursive call of `solve` pushes ($n-1$) disks from *temp* to *goal*, using *start* as the intermediate tower.
+Between those two recursive calls the current move (from *start* to *goal*) is recorded within the `moves` vector.
+If $n=0$ (*base case*) do nothing.
+
+Let's convince ourselves that the algorithm uses the minimal number of moves for solving: $T_8 = 2^8 - 1 = 255$.
+"""
+
+# ╔═╡ 4dd5af18-f139-4d16-808e-caa271438c95
+begin
+	empty!(moves)
+	solve(8, "start", "temp", "goal")
+	length(moves)
+end
+
+# ╔═╡ 2bd0f2c0-2fc3-452c-b140-e16ae541e1a4
 md"""
 ## Exercises
-1) Let $f$ a function with $f= \{(1,1), (2,4), (3, 9), \dots, (10, 100)\}$. **a)** What are the domain and the range of $f$ ? **b)** Give the transformation rule of $f$.
+1) **Proof the formula for the sum of the first $n$ even numbers $S_n = \sum_{k=1}^n 2k = n(n+1)$ by mathematical induction**.
 
 !!! hint "Solution"
-	a) $dom(f) = \{1,2,3, \dots, 10\}, \ ran(f) = \{1,4,9, \dots, 100\}$\
-	b) $x \mapsto x^2$.
-
-2) **What is the *range* of the function $f(x) = \sqrt{x}$, if its domain is given by a) $dom(f) = \mathbb{R^+}$, b) $dom(f) = \mathbb{R}$ ?**
-
-!!! hint "Solution"
-	a) The squareroot of a positve real number is a real number, thus $ran(f) = \mathbb{R}$\
-	b) The squareroot of a negative real number is a complex number, thus $ran(f) = \mathbb{C}$
-
-3) A horizontal line test can be used on a graph of a function on $\mathbb{R}$ to determine if the function is surjective or injective. **Give a similar test that can be used to determine if a relation is a function.**
-
-!!! hint "Solution"
-	A function is a relation which maps every argument of its domain to exactly one value of its range.
-	Thus, every vertical line should intersect the graph of the relation in exactly one point.
-
-4) Let $f(x) = x^3 + 5$. **a) Determine the inverse of $f$. b) Is the inverse a function?**
-
-!!! hint "Solution"
-	**a)** Switching *x* and *y* in $y = x^3 + 5$, we get $x = y^3 + 5$.
-	Solving for *y*, we get $y = \sqrt[3]{x-5}$. Thus, the inverse of $f(x) = f^{-1}(x) = \sqrt[3]{x-5}$.
-
-	**b)** $f^{-1}$ is a function, if and only if $f$ is bijective.
-	Drawing the graph for $f$, we're using the horizontal line test to verify whether every horizontal line intersects the graph in exactly one point.\
-	As it turns out, every function defined as a polynomial of *odd* degree is *bijective*. Hence, it has an unique inverse.
+	**base case**:\
+	For $n_0=1$ we get $1*2=2$, which is correct.
 	
+	**inductive step**:\
+	*induction hypothesis*: $\sum_{k=1}^{n+1} 2k = (n+1)(n+2).$\
+	$\begin{align}
+	lhs &= \sum_{k=1}^{n} 2k + 2(n+1)\\
+	&= n(n+1) + 2(n+1)\\
+	&= n^2 + 3n + 2\\
+	&= (n+1)(n+2) = rhs \ \square.
+	\end{align}$
+
+2) **Derive the sum formula for the first $n$ even numbers of exercise 1 using an [arithmetric progression](https://en.wikipedia.org/wiki/Arithmetic_progression#Sum)**.
+
+!!! hint "Solution"
+	The sum of an arithmetric progression can be found by multiplying the number of terms being added ($n$) by the sum of the first and last number in the progression, and dividing by 2:
+
+	$S_n = \frac{n(a_1 + a_n)}{2}.$
+	The arithmetric progression for the first $n$ even numbers is: $2,4,6,\dots, 2n$, leading to
+
+	$S_n = \frac{n(2+2n)}{2} = n(1+n) \ \square.$
+
+3) **Derive the sum formula for the first $n$ even numbers of exercise 1 using the sum formula for the first $n$ numbers**.
+
+!!! hint "Solution"
+
+	$S_n = \sum_{k=1}^n 2k = 2\sum_{k=1}^n k = 2\frac{n(n+1)}{2} = n(n+1) \ \square.$
+
+4) **Give a function definition for computing the [binomial coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient) defined by $\binom{n}{k}=\frac{n!}{k!(n-k)!}$ using the `facImp` function from this lesson**.
 """
 
-# ╔═╡ c82d6117-962c-45ca-bb49-30a70d9ce14c
-begin
-	fₒ(x) = x
-	xₒ = range(-5, 6, length=100)
-	yₒ = fₒ.(xₒ)
-	plot(xₒ, yₒ, label=L"f(x)=x^3+5", ylims=(0, 10),
-		xticks=(-5:6), yticks=(0:10), linewidth=2)
-	plot!(xₒ, (x -> 5), label=L"y=5")
+# ╔═╡ 436e7a32-5d98-441b-a15b-bcc61948f6f2
+function binom(n, k)
+	k
 end
 
-# ╔═╡ 1c1584da-4d59-4abf-8c57-42b5f7887037
-if fₒ(0) == 5 && fₒ(2) == 13
-	correct(md"Observe the line for $y=5$. It appears to run in parallel with the graph for $x \in [-0.2, +0.2]$, but that's only because of the graph's scale. Actually, it intersects the graph only in the point $(0, 5)$.")
+# ╔═╡ dc138f94-62ca-4954-8d70-3dbdf4465eec
+if binom(6, 49) == binomial(6, 49)
+	correct(md"Congratulations! You've completed this lesson successfully.")
 else
-	keep_working(md"Is your definition of $f_o(x)$ correct?")
+	keep_working(md"Your solution is not quite right.")
 end
+
+# ╔═╡ 956844b3-a787-45ba-a725-98bf5cde9796
+md"""
+!!! hint "Solution"
+	```{julia}
+	function binom(n, k)
+		div(facImp(n), facImp(k) * facImp(n-k))
+	end
+	```
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
+BenchmarkTools = "~1.5.0"
 Luxor = "~4.0.0"
 MathTeXEngine = "~0.5.7"
 Plots = "~1.40.4"
@@ -556,7 +941,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "c12ca1a9771a649b53a71c8d095bf799f3ec0323"
+project_hash = "e43749db55f3035fd10d62193d4a81dcc25968f3"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -578,6 +963,12 @@ version = "1.0.3"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.BenchmarkTools]]
+deps = ["JSON", "Logging", "Printf", "Profile", "Statistics", "UUIDs"]
+git-tree-sha1 = "f1dff6729bc61f4d49e140da1af55dcd1ac97b2f"
+uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+version = "1.5.0"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "2dc09997850d68179b69dafb58ae806167a32b1b"
@@ -1268,6 +1659,10 @@ version = "1.4.3"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.Profile]]
+deps = ["Printf"]
+uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
+
 [[deps.Qt6Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Vulkan_Loader_jll", "Xorg_libSM_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_cursor_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "libinput_jll", "xkbcommon_jll"]
 git-tree-sha1 = "37b7bb7aabf9a085e0044307e1717436117f2b3b"
@@ -1796,42 +2191,68 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
-# ╟─4fddf332-0de0-11ef-08c0-f9b97e8e2029
-# ╠═4c58357a-7ea3-49bb-930f-1d20788aaf68
-# ╠═d25b01e5-5b2f-41f0-a2a2-6d7bdd8936df
-# ╟─9e9c94df-7211-4dfd-ab5f-309c617fa34d
-# ╟─95bd6d88-4d12-49fb-a5b8-f8894f4c1b4f
-# ╟─2a8569e6-b4d2-4fe8-b776-864209482e61
-# ╟─dab865af-0863-47d0-9c6b-e8bd362494ec
-# ╠═0114a7c7-1a0a-43aa-95ea-d15839844c05
-# ╟─e3e736aa-78cf-46f1-83b8-11499c681984
-# ╠═418bd0c4-0b1e-4828-be4b-6489dd8c77ba
-# ╟─abf6a47a-d9a3-4d6b-90ed-2d3fd952aabc
-# ╠═67d86c11-ba69-499c-a337-5f34c745ce03
-# ╟─51b30b48-69ee-4157-a23b-ab35f05534c6
-# ╠═a3727f76-1f57-417a-8ce3-3700a4ac3a94
-# ╟─54f7f4ea-b142-4b82-bcdd-23b3b39e6011
-# ╠═7a4154d5-3ded-4a47-b5bc-04851345f0c5
-# ╟─afcb47c5-3325-4bde-b135-fc59018b709d
-# ╠═e1ce1290-997e-4139-989f-8dd394d38c6c
-# ╟─80e1fbdb-f612-483e-9da5-d60c10efc213
-# ╠═6cdd658c-1b4b-4af0-8e93-50d4f054bb82
-# ╟─ad1e43ce-f16e-4cb7-9a31-9aaaf8a81bc4
-# ╠═eafa6047-3ec6-4eec-a3a7-180f73adeba9
-# ╟─f0425772-a078-4a7d-9993-38e31bd6baea
-# ╠═a3ab3a55-fad8-45ba-9b5c-00e858d74292
-# ╠═de04700e-1230-40b7-a575-e34e0c810878
-# ╟─83d9458f-ff80-49e3-870c-31fc5f7de3a1
-# ╟─2516845b-762f-4060-9bb9-fbe41b605cd4
-# ╟─cf442ca9-545e-47aa-8338-218de429e7ec
-# ╟─43d9147f-2bad-4653-9a33-b368e67a6882
-# ╟─bfcdaef5-3c65-46bf-9631-35203ce27bfa
-# ╠═d09057df-29bc-4439-a561-654ea47a8cf2
-# ╟─59cda445-5a5a-4cda-ac77-51591d85bd46
-# ╟─289a68de-df86-4e1b-8fe1-5553ec1d8e3b
-# ╟─c87611e5-4e20-49d0-bbbd-deebb6ba7b40
-# ╠═c82d6117-962c-45ca-bb49-30a70d9ce14c
-# ╟─1c1584da-4d59-4abf-8c57-42b5f7887037
+# ╟─d8d70b1c-12b4-11ef-161c-21e7e562639a
+# ╟─211c457d-756e-4f93-a883-3b1ec4ddbf9d
+# ╠═6fc9840a-8178-4539-8f34-9e3c2eeaf14b
+# ╟─ef05dee5-0386-47de-b46c-3fb0e06f9a55
+# ╟─5ae6e717-b158-4664-bf46-ef6393742203
+# ╟─02c404ac-8029-4fac-a0e7-62990a947d5f
+# ╟─2c8b5d80-1a66-4d5a-b273-73f9e74d12e5
+# ╟─3e22ce56-8a66-4869-bff9-5affede043c4
+# ╟─b803c184-b435-420f-9bf7-ce7ab5ec2269
+# ╟─918847f2-efdc-4934-a01f-b0e147926585
+# ╟─5e1f8525-8d6e-4faf-8e34-8a0272b31e4d
+# ╟─95d5ef99-7634-48ef-b07a-8469af335335
+# ╟─2a6c367c-531a-4b16-a8d9-224e5c177031
+# ╟─c57c16a7-dea8-4b44-87cc-2bde733b4bfb
+# ╠═97fbdfdc-9400-4b45-bc0a-470bf6178e2c
+# ╟─671bd3cb-e081-4e72-91b6-49bc614b985c
+# ╠═a012258f-e65b-41ab-be79-cffcc837b2d8
+# ╠═94faa5d5-0bf5-4d42-80ec-fa3a81102a33
+# ╠═1d8ac2b9-1100-4a35-baaf-d8b14e18807d
+# ╟─42f0052c-79e4-471d-91c6-4b5074391b0e
+# ╠═eb70769a-5b28-48d8-baca-90ab16beb7b1
+# ╠═6aebe83e-0e33-457b-b73e-79059f79cd97
+# ╠═827976d7-f93a-4d26-9fc0-652c142fad5f
+# ╟─48be45cc-2a02-4cd1-94f5-447a99ece868
+# ╟─6a509eb7-dde7-4f56-974e-89d100ed3cf2
+# ╟─df48e493-30a6-41bd-857f-79a5a9c6b90c
+# ╟─6ab7723c-c16f-46ee-b5d3-3b3ef5b88fdb
+# ╠═ca9ae417-c56f-492a-ab5c-0e9cd0df8728
+# ╟─8b30de72-2b64-48e3-953a-caf82334eab4
+# ╠═8b1ba980-9f15-4465-baef-0bfe66033984
+# ╟─d2449cd0-ecdc-4293-addd-983a0e017552
+# ╠═489ba4d3-3f02-4ad4-a8c0-7619c4dacd70
+# ╟─e2d73c9f-8399-4c34-bded-4175d154a286
+# ╠═6030bde8-a610-4703-936c-0a9a12c29505
+# ╠═32c7bd76-1c8d-4471-810d-d03d245e17d6
+# ╟─0e1e9caa-6970-470b-9d12-9157cbfa4722
+# ╠═31acc697-21c8-4df1-a598-d29f6d7f66d8
+# ╟─cb4c8e2e-9b60-4df4-bba2-e7d28f3e88ee
+# ╠═627d75cd-802f-49df-9a5f-8e20cc918496
+# ╟─a9797347-0a67-4b70-a1a2-ea90d6a83b1b
+# ╠═dd130192-6f03-4a12-ae3c-a21cf4f04093
+# ╟─54feffb2-3404-4667-bdd0-c36f0e965aea
+# ╠═d91101a2-d2a7-45fe-9dd6-7ca223bf9d52
+# ╟─37f4196c-0fa3-474d-8ac9-5517e5546897
+# ╠═6133cc2a-c768-41c4-87d5-a717bc34b449
+# ╟─42c1ed7e-2eb1-4bbb-aca7-9fd0c9d785ff
+# ╠═a3cddb5c-ee9a-4e43-9cbc-b4abf14b01be
+# ╠═e78b6cdf-f8d0-4f6d-86f1-090986cd93fd
+# ╠═83e5b18e-910e-4c5b-9ae3-64126e08cabf
+# ╟─81f0e921-2376-4d76-ad31-2157f82caa1b
+# ╟─7a29c871-cae6-445f-be51-846ddf57a668
+# ╟─6b3b197b-e468-4044-bd17-542314908b84
+# ╟─13e2636e-c971-4c4b-b2df-8fabdc3f7f77
+# ╠═0c649fca-f86d-453f-bf02-7b707789fe88
+# ╟─4f143dbe-7a32-48f7-8ef9-7a0504426be3
+# ╟─48f39949-ccce-4af0-ab02-458af6266f35
+# ╠═859e1849-5079-4a3d-a5bf-5db06be47483
+# ╟─a397469b-9d79-4d15-8a74-ac6348e879db
+# ╠═4dd5af18-f139-4d16-808e-caa271438c95
+# ╟─2bd0f2c0-2fc3-452c-b140-e16ae541e1a4
+# ╠═436e7a32-5d98-441b-a15b-bcc61948f6f2
+# ╟─dc138f94-62ca-4954-8d70-3dbdf4465eec
+# ╟─956844b3-a787-45ba-a725-98bf5cde9796
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
