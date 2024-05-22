@@ -895,11 +895,11 @@ md"""
 
 	$S_n = \sum_{k=1}^n 2k = 2\sum_{k=1}^n k = 2\frac{n(n+1)}{2} = n(n+1) \ \square.$
 
-4) **Give a function definition for computing the [binomial coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient) defined by $\binom{n}{k}=\frac{n!}{k!(n-k)!}$ using the `facImp` function from this lesson**.
+4) **Give a function definition for computing the [binomial coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient) defined by $\binom{n}{k}=\frac{n!}{k!(n-k)!}$**. Do not use any of the functions we have defined for computing $n!$ so far.
 """
 
 # ╔═╡ 436e7a32-5d98-441b-a15b-bcc61948f6f2
-function binom(n, k)
+function binom(n::Int, k::Int)::Int
 	k
 end
 
@@ -910,14 +910,29 @@ else
 	keep_working(md"Your solution is not quite right.")
 end
 
+# ╔═╡ 0c458ac1-fa7d-4fa9-89ea-585c3e9991b8
+md"""
+!!! hint "Hint"
+	The factorial $n!$ can be written in *product notation* as $\prod_{i=1}^n i$, that is, the product of all natural numbers $m$ with $m \leq n$.
+	This notation obscures the recursive nature of the factorial's definition.
+	
+	In a functional programming language recurrent problems are typically solved in a similar manner without explicit recursion.
+	*Higher-order* functions like `map` and `reduce` apply a given function to a range of values, transforming those values into the results of the function call.
+
+	Use the appropriate higher-order function to compute the factorial.\
+	Also make sure to use integer division to obtain the correct return type.
+"""
+
 # ╔═╡ 956844b3-a787-45ba-a725-98bf5cde9796
 md"""
 !!! hint "Solution"
 	```{julia}
-	function binom(n, k)
-		div(facImp(n), facImp(k) * facImp(n-k))
+	function binom(n::Int, k::Int)::Int
+		fac(n) = foldl(*, 1:n)
+		div(fac(n), fac(k) * fac(n-k))
 	end
 	```
+	The higher-order function `foldl` does the same as `reduce`, but with guaranteed left associativity. You could use `foldr` instead, leading to the same result. Why?
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2253,6 +2268,7 @@ version = "1.4.1+1"
 # ╟─2bd0f2c0-2fc3-452c-b140-e16ae541e1a4
 # ╠═436e7a32-5d98-441b-a15b-bcc61948f6f2
 # ╟─dc138f94-62ca-4954-8d70-3dbdf4465eec
+# ╟─0c458ac1-fa7d-4fa9-89ea-585c3e9991b8
 # ╟─956844b3-a787-45ba-a725-98bf5cde9796
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
