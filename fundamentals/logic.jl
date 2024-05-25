@@ -6,9 +6,19 @@ using InteractiveUtils
 
 # ╔═╡ 9e101b16-5cfd-42b8-b515-0fa685db0449
 begin
-	include("helper.jl")
+	using Markdown
 	using Luxor
 	using MathTeXEngine
+	
+	keep_working(text=md"The answer is not quite right.") =
+	  Markdown.MD(Markdown.Admonition("danger", "Keep working on it!", [text]));
+	
+	almost(text) = Markdown.MD(Markdown.Admonition("warning", "Almost there!", [text]));
+	
+	correct(text=md"You got the right answer! Move on to the next exercise.") =
+	  Markdown.MD(Markdown.Admonition("correct", "Got it!", [text]));
+
+	"🏁"
 end
 
 # ╔═╡ 5b99059d-12d0-4824-a73f-e42a789fca7c
@@ -570,6 +580,7 @@ md"""
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
+Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 
 [compat]
@@ -583,7 +594,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b785ca97ce0b4a40207ef319e191a9ac478c97d4"
+project_hash = "59b62e2f0f6bdb6914267acd182e1eda043a2a62"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -1369,7 +1380,6 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─9e101b16-5cfd-42b8-b515-0fa685db0449
 # ╟─5b99059d-12d0-4824-a73f-e42a789fca7c
 # ╟─d6e9c695-5b1c-4d84-9b2f-996dba657ef3
 # ╟─c857a0d6-3302-4085-a4de-55c32ad0ff5f
@@ -1411,5 +1421,6 @@ version = "3.5.0+0"
 # ╠═de8afa13-10e7-48cb-a258-4ddd4ffe8834
 # ╟─33b4ba18-93e2-404d-ac65-a71ccfbef812
 # ╟─25093e74-19fc-4d60-8abd-8ab552877d1e
+# ╟─9e101b16-5cfd-42b8-b515-0fa685db0449
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -4,7 +4,7 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ d8d70b1c-12b4-11ef-161c-21e7e562639a
+# ╔═╡ 7235d016-18c2-11ef-124b-79d08872dc71
 begin
 	using Markdown
 	using Luxor
@@ -23,926 +23,579 @@ begin
 	"🏁"
 end
 
-# ╔═╡ 211c457d-756e-4f93-a883-3b1ec4ddbf9d
+# ╔═╡ f650e3b9-28e1-4396-a0f5-5a901be136ce
 md"""
-# Induction and Recursion
+# Prime Numbers
+A natural number is called a *prime number* (or a *prime*) if it is greater than 1 and cannot be written as the product of two smaller natural numbers.
+The numbers that are not prime are called *composite numbers*.
+In other words, $n$ is prime if $n$ items cannot be divided up into smaller equal-size groups of more than one item.
 
-*Mathematical Induction* is a mathematical proof method.
-The term *inductive* here is not to be confused with the meaning of the term *inductive reasoning*, which describes methods of reasoning in which broad generalizations or principles are derived from a body of observations.
-Mathematical induction is actually a form of *deductive* rather than inductive reasoning, where the conclusion of a deductive argument is certain given the premises are correct.
-But, as the term is commonly accepted, we will stick to it anyway.
-
-Roughly speaking, mathematical induction is a method to prove facts about objects that can be built from a finite number of pieces in a finite number of steps (e.g. the set of natural numbers).
-Such objects can often be constructed by means of *recursive definitions*.
-Thus, as we will explore in this lesson, recursive definitions and inductive proofs are two sides of the same coin.
-
-## Mathematical Induction
-
-Let $P(n)$ a proposition about natural numbers.
-To prove a goal of the form $\forall n \in N: P(n)$ by *mathematical induction*, it is sufficient to perfom the following steps:
-1.  **base case**: this proves the statement for an arbitrarily chosen number $n_0$; in most cases this will be, but does not have to, the number 1 as the smallest natural number
-2.  **induction step**: this proves that *if* the statement holds for any given case $n=k$ *then* it must also hold for the next case $n = k + 1$ (or alternatively the preceeding case $n = k - 1$).
-
-These two steps together establish that the statement holds for every natural number $n \in \mathbb{N}$.
-
-Perhaps the easiest way to understand mathematical induduction is to work through some examples. 
-
-!!! tip "The sum of the first n odd numbers"
-	The sum of the first $n$ odd numbers $S_n$ equals $n^2$.
-	More formally:
-	
-	$S_n = \sum_{k=1}^{n}(2k - 1) = n^2.$
-
-**Base case**\
-For $n=1$ we have $\sum_{k=1}^{1}(2k - 1) = 1 = 1^2$, which is obviously true.
-
-**Induction step**\
-We have to show $\sum_{k=1}^{n+1}(2k - 1) = (n+1)^2$, where this representation is called the *induction hypothesis*.\
-For that, we express the left hand side *(lhs)* of the induction hypothesis like so:
-$lhs = \sum_{k=1}^{n}(2k - 1) + 2(n+1) - 1$.\
-Then we reshape that expression and show that it is equivalent to the right hand side *(rhs)* of the induction hypothesis.
-For this, we are allowed to use the induction hypothesis like so:\
-$lhs = n^2 + 2(n+1) - 1.$\
-Applying the [binomial formula](https://en.wikipedia.org/wiki/Binomial_theorem), we get
-
-$lhs = n^2 + 2n + 1 = (n+1)^2 = rhs \ \square.$
-
-However, proving a proposition with mathematical induction gives us no clue for finding that formula in the first place, that is, *discovering* and *proving* a formula are completely different tasks.
-
-So, how do we find a "closed form" for solving the expression $\sum_{k=1}^{n}(2k - 1)$, that is, a formula that lets us compute the result quickly, even for large $n$?\
-One way is to *guess* the correct solution and then to prove that our guess is correct.
-Our best hope for guessing the solution is to examine the results of the expression for small cases. 
-We will do that with the help of a Julia function:
+Let's illustrate this for the prime number 7 with [Cuisenaire rods](https://en.wikipedia.org/wiki/Cuisenaire_rods):
 """
 
-# ╔═╡ 6fc9840a-8178-4539-8f34-9e3c2eeaf14b
+# ╔═╡ dc78f4c0-ea0c-4e9d-9984-ad60e0e2d278
 begin
-	sofon(n) = sum([2k - 1 for k in 1:n])
-	for n in 1:10
-		@show n, sofon(n)
-	end
-end
-
-# ╔═╡ ef05dee5-0386-47de-b46c-3fb0e06f9a55
-md"""
-It looks as if $S_n = n^2$, at least for $n <= 10$.
-Having a proof with mathematical induction already in place, we can verify that this solution is correct.
-"""
-
-# ╔═╡ 5ae6e717-b158-4664-bf46-ef6393742203
-md"""
-!!! tip "The sum of the first n numbers"
-	The sum of the first $n$ natural numbers $T_n$ equals $\frac{n(n+1)}{2}$. More formally:
-	
-	$T_n = \sum_{k=1}^n k = 1+2+3+\cdots+n = \frac{n(n+1)}{2}.$
-
-**Base case**\
-We choose $n_0 = 1$ and get $\frac{1(1+1)}{2} = 1$, which is obviously true.
-
-**Inductive step**\
-We formulate the *induction hypothesis* like so:
-
-$\sum_{k=1}^{n+1} k = \frac{(n+1)(n+2)}{2}.$
-
-For the proof we'll expand and reshape the left hand side (*lhs*) of the hypothesis and check whether this leads to the same result as the right hand side (*rhs*) of this
-equation:
-
-$\begin{align}
-lhs &= \sum_{k=1}^n k + n + 1\\
-&= \frac{n(n+1)}{2} + n + 1\\
-&= \frac{n(n+1) + 2(n+1)}{2}\\
-&= \frac{(n+1)(n+2)}{2} = rhs \ \square.
-\end{align}$
-
-The last line of this proof follows from the *distributive law* of algebra:
-$ba + ca = a(b+c)$.
-
-In order to find a closed formula for solving the sum expression, we want to do better than just guessing, which we did for the last example.
-One way to do so, is to employ the concept of [triangular numbers](https://en.wikipedia.org/wiki/Triangular_number), which are a kind of [figurate numbers](https://en.wikipedia.org/wiki/Figurate_number).
-
-A triangular number counts objects arranged in an equilateral triangle.
-The *n*th triangular number is the number of objects in the triangular arrangement with *n* objects on each side, and it's equal to the sum of the *n* natural numbers from 1 to *n*.
-
-Let's inspect the visual representation for $n = 10$:
-"""
-
-# ╔═╡ 02c404ac-8029-4fac-a0e7-62990a947d5f
-begin
-	function trow(n)
-	  points = Array{Point}(undef, n)
-	  for p in 1:n
-	    points[p] = Point(p*25, 0)
-	  end
-	  circle.(points, 10, action = :fill)
-	end
-	
-	function triangle(n)
-	  n == 0 && return
-	  trow(n)
-	  Luxor.translate(0, 25)
-	  triangle(n-1)
-	end
-	
-	Drawing(260, 250, "triangle.svg")
-	Luxor.translate(0, 10)
-	setcolor(0, 0, 0, 0.7)
-	triangle(10)
-	finish()
-	preview()
-end
-
-# ╔═╡ 2c8b5d80-1a66-4d5a-b273-73f9e74d12e5
-md"""
-The number of elements in this figure is obviously $T_n = \sum_{k=1}^{10} = 55$.\
-Unfortunately it's not easy to count the elements of a triangle.
-But it would be easy to count the elements of a rectangle, as there is a simple formula to do so: $elems_{rect} = rows_{rect} \times cols_{rect}$.\
-So, the trick is to duplicate the triangle, rotate it by 180 degrees and paste it to the original one, resulting in a rectangle:
-"""
-
-# ╔═╡ 3e22ce56-8a66-4869-bff9-5affede043c4
-begin
-	Drawing(285, 250, "rectangle.svg")
-	Luxor.translate(0, 10)
-	setcolor(0, 0, 0, .7)
-	triangle(10)
-	Luxor.rotate(π)
-	Luxor.translate(-300, 25)
-	setcolor(0, 0, 0, .2)
-	triangle(10)
-	finish()
-	preview()
-end
-
-# ╔═╡ b803c184-b435-420f-9bf7-ce7ab5ec2269
-md"""
-Observe that the number of rows of this rectangle is the same as that from the triangle above, but the number of columns has increased by one.
-Therefore, the number of elements in this rectangle is $n \times (n + 1)$, and as we have duplicated the original triangle, we only need the half of it:
-
-$T_n = \frac{n(n+1)}{2}.$
-
-Another way to solve the sum expression was found by the German mathematician
-*Carl Friedrich Gauß* at the age of 9.\
-He added all the natural numbers up to $n$ in a line, and in a second line he added them again, but in reverse order.
-Finally, he added both lines like so:
-
-$\begin{align}
-1 + 2 &+ \dots + (n-1) + n &= T_n\\
-n + (n-1) &+ \dots + 2 + 1 &= T_n\\
-(n+1) + (n+1) &+ \dots + (n+1) + (n+1) &= 2T_n
-\end{align}$
-
-How many times does $(n+1)$ appear in the last line?
-The first line shows that the answer is $n$. Hence $n(n+1) = 2T_n$, leading to
-
-$T_n = \frac{n(n+1)}{2}.$
-"""
-
-# ╔═╡ 918847f2-efdc-4934-a01f-b0e147926585
-md"""
-Now, having introduced the concept of *figurate numbers*, let's use this for finding the solution for the last example $S_n = \sum_{k=1}^{n}(2k - 1) = n^2$, which we have solved only by guessing so far.
-
-We can represent $n^2$ as a [square number](https://en.wikipedia.org/wiki/Square_number).
-A number $m$ is a *square number* if and only if *m* elements can be arranged in a square, that is $m = n^2$, where $n$ is the side length of the square.
-Thus, the figure below illustrates all the square numbers $S_n$ for $\{n \in \mathbb{N} \mid n \leq 10\}$, starting at the upper right corner of the main square.
-The squares of odd numbers are shown with dark circles, while the squares for even numbers are shown with light circles.
-"""
-
-# ╔═╡ 5e1f8525-8d6e-4faf-8e34-8a0272b31e4d
-begin
-	function srow(n,r)
-		if r%2 == 1
-			for p in 1:n
-				(p%2 == 1 && p <= (n-r)) ?
-					setcolor(0, 0, 0, .2) :
-					setcolor(0, 0, 0, .7)
-				circle(Point(p*25, 0), 10, action=:fill)
-			end
-		else
-			for p in 1:n
-				(p%2 == 1 || p > (n-r)) ?
-					setcolor(0, 0, 0, .2) :
-					setcolor(0, 0, 0, .7)
-				circle(Point(p*25, 0), 10, action=:fill)
-			end
-		end
-	end
-
-	function square(n)
-		for r in 1:n
-			srow(n,r)
-			Luxor.translate(0, 25)
-		end
-	end
-	
-	Drawing(260, 250, "square.svg")
+	units = 20
+	Drawing(14units, 8units, "cuisenaire.svg")
+	fontface("FreeSans")
+	fontsize(16)
 	setcolor("black")
-	Luxor.translate(0, 10)
-	square(10)
+	Luxor.translate(0, 1)
+	p₇ = Array{Point}(undef, 7)
+	for p in 1:7
+	    p₇[p] = Point(units * p, 0)
+	end
+	rect.(p₇, units, units, action = :stroke)
+	Luxor.text(L"7 \times 1", Point(9units, units))
+	Luxor.translate(-units, 0)
+	for r in 1:3
+		setcolor("red")
+		rect(Point(2units * r, units), 2units, units, action=:fill)
+		setcolor("black")
+		rect(Point(2units * r, units), 2units, units, action=:stroke)
+	end
+	rect(Point(8units, units), units, units, action=:stroke)
+	Luxor.text(L"3 \times 2 + 1", Point(10units, 2units))
+	setcolor("lime")
+	rect(Point(2units, 2units), 3units, units, action=:fill)
+	setcolor("black")
+	rect(Point(2units, 2units), 3units, units, action=:stroke)
+	setcolor("lime")
+	rect(Point(5units, 2units), 3units, units, action=:fill)
+	setcolor("black")
+	rect(Point(5units, 2units), 3units, units, action=:stroke)
+	rect(Point(8units, 2units), units, units, action=:stroke)
+	Luxor.text(L"2 \times 3 + 1", Point(10units, 3units))
+	setcolor("magenta")
+	rect(Point(2units, 3units), 4units, units, action=:fill)
+	setcolor("black")
+	rect(Point(2units, 3units), 4units, units, action=:stroke)
+	setcolor("lime")
+	rect(Point(6units, 3units), 3units, units, action=:fill)
+	setcolor("black")
+	rect(Point(6units, 3units), 3units, units, action=:stroke)
+	Luxor.text(L"4 + 3", Point(10units, 4units))
+	setcolor("yellow")
+	rect(Point(2units, 4units), 5units, units, action=:fill)
+	setcolor("black")
+	rect(Point(2units, 4units), 5units, units, action=:stroke)
+	setcolor("red")
+	rect(Point(7units, 4units), 2units, units, action=:fill)
+	setcolor("black")
+	rect(Point(7units, 4units), 2units, units, action=:stroke)
+	Luxor.text(L"5 + 2", Point(10units, 5units))
+	setcolor("green")
+	rect(Point(2units, 5units), 6units, units, action=:fill)
+	setcolor("black")
+	rect(Point(2units, 5units), 6units, units, action=:stroke)
+	rect(Point(8units, 5units), units, units, action=:stroke)
+	Luxor.text(L"6 + 1", Point(10units, 6units))
+	setcolor("grey7")
+	rect(Point(2units, 6units), 7units, units, action=:fill)
+	setcolor("black")
+	rect(Point(2units, 6units), 7units, units, action=:stroke)
+	Luxor.text(L"1 \times 7", Point(10units, 7units))
 	finish()
 	preview()
 end
 
-# ╔═╡ 95d5ef99-7634-48ef-b07a-8469af335335
+# ╔═╡ 921df2e0-ccdd-48c0-a517-d4f9d85cbdf1
 md"""
-Representing the dark and light circles as triangular numbers, we see a distinct relation between their triangular and square number arrangement:
-$T_{n-1} + T_n = n^2.$
+There are *infinitely many* prime numbers.
+This statement is referred to as *Euclid's theorem* in honor of the ancient Greek mathematician Euclid, who offered the proof in his work Elements (Book IX, Proposition 20):
+
+!!! danger "Euclid's Theorem"
+	Consider any finite list of prime numbers $p_1, p_2, \dots, p_n$.\
+	Let $P$ be the product of all the prime numbers in the list: $P = \prod_{k=1}^n = p_1 * p_2 * \dots * p_n$.\
+	Let $q = P + 1$. Then $q$ is either prime or not:
+
+	- If $q$ is prime, then there is at least one more prime that is not in the list, namely, $q$ itself.
+	- If $q$ is not prime, then some prime factor $p$ divides $q$. If this factor $p$ were in our list, then it would divide $P$ (since $P$ is the product of every number in the list); but $p$ also divides $P + 1 = q$, as just stated. If $p$ divides $P$ and also $q$, then $p$ must also divide the difference of the two numbers, which is $(P + 1) − P$ or just 1. Since no prime number divides 1, $p$ cannot be in the list.
+	This means that at least one more prime number exists beyond those in the list.
 """
 
-# ╔═╡ 2a6c367c-531a-4b16-a8d9-224e5c177031
-begin
-	Drawing(225, 200, "relation.svg")
-	Luxor.translate(0, 10)
-	setcolor(0, 0, 0, 0.7)
-	triangle(7)
-	Luxor.rotate(π)
-	Luxor.translate(-225, 0)
-	setcolor(0, 0, 0, .2)
-	triangle(8)
-	finish()
-	preview()
+# ╔═╡ 8bfeaaa6-51dc-40a5-9b43-4d6688bc29ec
+md"""
+We can test whether a number is prime by *trial division*:
+given an input number $n$, check whether it is divisible by any number between 2 and $\sqrt{n}$ (i.e., whether the division leaves no remainder).
+If so, then $n$ is *composite*.
+Otherwise, it is *prime*.\
+For any divisor $p \geq \sqrt{n}$ there must be another divisor $q = \frac{n}{p} \textrm{ with } q^2 \leq n$, and therefore looking for divisors up to $\sqrt{n}$ is sufficient.
+This insight leads to the following definition of prime numbers:
+
+!!! warning "Definition of Primes"
+	A natural number $n$ is **prime** if $n > 1$ and no number $p$ with $p^2 \leq n$ divides $n$. More formally
+
+	$P(n) \equiv n \in \mathbb{N} \land n > 1 \land \forall p((p > 1 \land p^2 \leq n) \Rightarrow \neg p|n).$
+
+Translating that definition into an algorithm, we check only for the number 2 and every subsequent odd number as divisors: 
+"""
+
+# ╔═╡ 7e32f6cf-a3a2-481e-99ec-b12f597878e0
+function isPrime(n::Int)::Bool
+	n%2 == 0 && return false
+	k = 3
+	while k*k <= n
+		n%k == 0 && return false
+		k += 2
+	end
+	true
 end
 
-# ╔═╡ c57c16a7-dea8-4b44-87cc-2bde733b4bfb
+# ╔═╡ 7c293013-e9ce-4293-ab85-8da9fc130372
+for n in 3:2:20
+	@show n, isPrime(n)
+end
+
+# ╔═╡ c572f5e0-cbae-4d85-8971-e3d04d3a2b95
 md"""
-Let's examine one last example:
+This algorithm has a running time of $\mathcal{O}(\sqrt{n})$.
 
-!!! tip "The sum of the first n squares"
-	The sum of the first $n$ square numbers $Te_n$ is given by the formula:
-	
-	$Te_n = \sum_{k=1}^{n}k^2 = \frac{n(n+1)(2n+1)}{6}.$
+## Generating Primes
 
-Before giving the proof, let's have a look on some facts about this sum formula:
-- the sum formula $\sum_{k=1}^{n}k^2$ represents another *figurate number*, called [tetrahedral number](https://en.wikipedia.org/wiki/Tetrahedral_number)
-- it represents a pyramid with a triangular base and three sides, called a [tetrahedron](https://en.wikipedia.org/wiki/Tetrahedron)
-- The $n$th tetrahedral number, $Te_n$, is the sum of the first $n$ triangular numbers, that is,  
-$Te_n = \sum_{k=1}^{n}k^2 = \sum_{k=1}^{n}\frac{k(k+1)}{2} = \sum_{k=1}^{n}\left(\sum_{i=1}^{k}i\right).$
-
-**Base case**\
-For $n_0 = 1$, we get $Te_1 = \frac{1 \cdot 2 \cdot 3}{6} = 1$.
-
-**Inductive step**\
-
-$\begin{align}
-Te_{n+1} &= Te_n + T_{n+1}\\
-&= \frac{n(n+1)(2n+1)}{6} + \frac{(n+1)(n+2)}{2}\\
-&= (n+1)(n+2)\left(\frac{n}{6} + \frac{1}{2} \right)\\
-&= \frac{(n+1)(n+2)(n+3)}{6}\\
-&= \frac{n(n+1)(2n+1)}{6} \ \square.
-\end{align}$
-
-For this example we're not interested in how to find that closed formula.
-Instead, we're going to explore the effects of replacing the (recursive) sum formula with the closed form of the formula for computing the actual results for a given *n*.
-For that, we define two distinct functions and compare their running time via some benchmarks:
+Now, we could use the `isPrime` function to generate primes up to a given limit
 """
 
-# ╔═╡ 97fbdfdc-9400-4b45-bc0a-470bf6178e2c
+# ╔═╡ 5b43aa09-decd-424f-815c-86ceb9d5e86f
+function generate(n::Int)::Vector{Int}
+	primes = [2]
+	for k in 3:n
+		isPrime(k) && push!(primes, k)
+	end
+	primes
+end
+
+# ╔═╡ 06e7babf-107d-4483-a2de-651218c76751
+md"resulting in a running time of $\mathcal{O}(n \sqrt{n})$."
+
+# ╔═╡ f8e4913a-3944-4fa4-a316-55ad0c481b34
+generate(120)
+
+# ╔═╡ 4d00050e-57cc-4a94-9dc5-2fa7dbd90d60
+md"""
+But we can do better, using the *Sieve of Eratosthenes*, which is an ancient algorithm for finding all prime numbers up to a given limit.\
+It does so by iteratively marking as composite (i.e., not prime) the multiples of each prime, starting with the first prime number.
+Once all the multiples of each discovered prime have been marked as composites, the remaining unmarked numbers are primes.
+
+![Sieve of Eratosthenes](https://upload.wikimedia.org/wikipedia/commons/9/94/Animation_Sieve_of_Eratosth.gif)
+
+The algorithm can be implemented like so:
+"""
+
+# ╔═╡ bba21c13-a354-4da6-94c9-a1f0e31e83db
+function sieve(n::Int)
+	isPrime = trues(n+1)
+	primes = Vector{Int}()
+	for i in 2:n
+		if isPrime[i]
+	    	push!(primes, i)
+	    	for j in i:div(n, i)
+	        	isPrime[i*j] = false
+	      	end
+	    end
+	end
+	primes
+end
+
+# ╔═╡ 8dee3d16-ac89-4aad-a904-052d230b9957
+@assert generate(120) == sieve(120)
+
+# ╔═╡ 110445f1-623b-4eb8-bcd1-49c270787e9b
+md"""
+The running time of the `sieve` is much better than that of the `generate` function: it is proportional to
+
+$\sum_{i=2}^n \frac{n}{i} =  n \sum_{i=2}^n \frac{1}{i} \leq n \int_1^n \frac{1}{x} dx = n \ln n, \textrm{ thus } \mathcal{O}(n \log n).$
+
+Furthermore, since the inner loop is executed for prime numbers only, the
+running time is even less: it can be shown that the actual running time for the
+*sieve of Eratosthenes* is $\mathcal{O}(n \log \log n)$.
+Not bad for an ancient algorithm.
+"""
+
+# ╔═╡ 0a616fc9-ce91-4a1e-acaf-c1153f9d453d
+md"""
+## Prime Factorization
+
+In number theory, *integer factorization* is the decomposition of a positive integer into a product of integers.
+If one of the factors is composite, it can in turn be written as a product of smaller factors, for example $12 = 4 \times 3 = 2 \times 2 \times 3 = 2^2 \times 3$.
+Continuing this process until every factor is prime is called *prime factorization*. 
+The result is always unique up to the order of the factors by the *fundamental theorem of arithmetic*.
+
+!!! danger "Fundamental Theorem of Arithmetic"
+	Every integer greater than 1 can be represented uniquely as a product of prime numbers, up to the order of the factors.
+
+For example, $360 = 2 \cdot 2 \cdot 2 \cdot 3 \cdot 3 \cdot 5 = 2^3 \cdot 3^2 \cdot5$.
+The theorem says two things about this example: first, that 360 can be represented as a product of primes, and second, that no matter how this is done, there will always be exactly three $2$s, two $3$s, one $5$, and no other primes in the product.
+
+The requirement that the factors be prime is necessary: factorizations containing composite numbers may not be unique (for example, $12 = 3 \times 4 = 2 \times 6$).\
+The existence of a unique prime factorization for every integer number makes it relatively easy to compute the number's prime factors.
+The key idea of such an algorithm is:
+*instead of just checking if a number divides $n$, actually divide $n$ by this number*.
+
+The algorithm works as follows:\
+for each integer number $k \geq 2$, if $k$ is a factor of $n$, divide $n$ by $k$
+and completely divide out each $k$ before moving to the next $k$.
+When the next $k$ is a factor it will necessarily be prime, as all smaller factors
+have already been removed.
+After dividing out all prime factors $n$ will equal to 1.
+"""
+
+# ╔═╡ 48538dda-a448-480c-b7b4-5a8172275cbc
+function primeFactors(n)
+	pf::Vector{Int} = []
+	k = 2
+	while k * k <= n 				# 1
+		while n % k == 0
+			push!(pf, k)
+			n = div(n, k) 			# 2
+		end
+		n == 1 && break 			# 3
+    	k == 2 ? k += 1 : k += 2 	# 4
+	end
+	n != 1 && push!(pf, n)          # 5
+	pf
+end
+
+# ╔═╡ df3623d1-14ef-4ac6-8f0c-adc0aa31296b
+md"""
+The key steps of this algorithm are:
+1. set upper limit for `k` to $\sqrt{n}$: *there can be at most one prime factor $> \sqrt{n}$*
+2. if `k` is a factor of `n`, divide out all `k`'s
+3. stop if all factors have been divided out
+4. omit all even numbers except 2
+5. add `n` to the prime factors if the upper limit of $k > \sqrt{n}$ has been reached.
+"""
+
+# ╔═╡ 42ecb966-a900-4915-8ee4-f36eb19554ce
+primeFactors(360)
+
+# ╔═╡ 90a4b589-6c86-4e98-b9c5-e2b59d13511c
+md"""
+## Prime Number Theorem
+There are infinitely many primes, as demonstrated by *Euclid* around 300 BC.
+No known simple formula separates prime numbers from composite numbers.
+However, the distribution of primes within the natural numbers in the large can be
+statistically modelled.
+
+!!! danger "Prime Number Theorem"
+	The probability of a randomly chosen large number being prime is inversely proportional to its number of digits, that is, to its logarithm.
+	This can be denoted with *asymptotic notation*:
+
+	$\pi(n) \sim \frac{n}{\ln{n}},$
+
+	where $\pi(n)$ is the prime-counting function.
+
+The $\sim$ in the formula reads as "*is similar to*" and means that the ratio
+of $\pi(n)$ to the right-hand fraction approaches 1 as $n$ grows to infinity.
+
+Let's check that formula for a small $n=1000$ with our `sieve` function for
+generating primes:
+"""
+
+# ╔═╡ 88fea55b-6801-43e5-98e6-d2bd03a4ddce
+@show length(sieve(1000)) ceil(Int, 1000 / log(1000))
+
+# ╔═╡ 0b21f72e-37e4-4d6d-8b1b-d44bb938f3ab
+md"""
+Note quite there, but that's not a surprise.\
+Considering the *sieve of Eratosthenes* again, we see that starting with 2, every subsequent
+second number is crossed out (not prime), then every third and fifth number, and so forth.
+The further we move upwards, the more numbers have already been crossed out, making it
+less likely to hit a prime.
+Thus, for a small $n$ we're getting actually more primes than suggested by the prime number theorem.
+
+Let's calculate the values of $\pi(n)$, using `sieve` as the generating function
+"""
+
+# ╔═╡ 5a792796-9a53-4abe-b47e-6ebc01de35c6
 begin
-	# recursive definition
-	sumRecursive(n::Int) = sum([k^2 for k in 1:n])
-	# closed formula
-	sumClosed(n::Int) = div(n * (n+1) * (2n + 1), 6)
-	for n in [10, 100, 1000]
-		@assert sumRecursive(n) == sumClosed(n)
+	primes = sieve(1100)
+	x1 = range(0, step=100, stop=1000)
+	y1 = Vector{Int}()
+	for i in x1
+		push!(y1, count(<=(i), primes))
+	end
+	push!(y1, 168) # adjusting for plotting the step-function
+	for i in y1
+		print("$i ")
 	end
 end
 
-# ╔═╡ 671bd3cb-e081-4e72-91b6-49bc614b985c
-md"""
-If we don't get any errors from the `@assert` macro above, then both functions indeed return the same result for a given *n*.\
-Performing some benchmarks for the recursive definition,
-"""
+# ╔═╡ 081a176a-4d72-425b-9de4-0a7536917a86
+md"and plot them for intervals of length 100 each:"
 
-# ╔═╡ a012258f-e65b-41ab-be79-cffcc837b2d8
-@btime sumRecursive(10)
-
-# ╔═╡ 94faa5d5-0bf5-4d42-80ec-fa3a81102a33
-@btime sumRecursive(100)
-
-# ╔═╡ 1d8ac2b9-1100-4a35-baaf-d8b14e18807d
-@btime sumRecursive(1000)
-
-# ╔═╡ 42f0052c-79e4-471d-91c6-4b5074391b0e
-md"""
-we see that, with growing *n*, the running time of the algorithm also grows with a similar rate.
-As the algorithm has to iterate over all natural number from 1 up to *n*, we call this a *linear* running time, denoted with $\Theta (n)$ in *asymptotic notation*.\
-If you are not familiar with asymptotic notation, please have a look at the next section, where we'll explore the basics of how to determine the running time of an algorithm.
-
-Now, let's do the same for the closed-form algorithm:
-"""
-
-# ╔═╡ eb70769a-5b28-48d8-baca-90ab16beb7b1
-@btime sumClosed(10)
-
-# ╔═╡ 6aebe83e-0e33-457b-b73e-79059f79cd97
-@btime sumClosed(100)
-
-# ╔═╡ 827976d7-f93a-4d26-9fc0-652c142fad5f
-@btime sumClosed(1000)
-
-# ╔═╡ 48be45cc-2a02-4cd1-94f5-447a99ece868
-md"""
-Observe that not only the running time of this algorithm is much smaller (i.e. it's about 30 times faster, even for a small $n=10$), it also remains constant for a growing *n*.
-We call this a *constant* running time, denoted as $\Theta(1)$.\
-Also observe that this improved algorithm, in contrast to the recursive algorithm, doesn't need to allocate memory on the programs heap, thus it also shows a constant *space complexity*.
-
-"""
-
-# ╔═╡ 6a509eb7-dde7-4f56-974e-89d100ed3cf2
-md"""
-## Interlude: Running Time of Algorithms
-
-Whenever we're reasonating about the efficiency of algorithms, we're using *asymptotic notation* for doing so.
-The key idea is to consider the complexity of an algorithm in terms of its *running time* for a big input value, that is for $n \to \infty$.
-
-In particular, we express the running time as a function of $n$, where the function value is denoted is a polynom of $n$, calculating the necessary steps the algorithm has to perform in order to produce the desired result, for example
-
-$g(n) = a * n^2 + b * n + c \ , \quad \textrm{ for } n \to \infty.$
-
-In this case that's a polynomial of second degree (a quadratic polynomial), as $n$ occurs with its highest power of 2.
-When $n$ is getting bigger, the term with the highest power of $n$ is most signifant,
-so we just neglect all other terms, leading to
-
-$g(n) = c * n^2$
-
-where $c$ is some constant value, which we can neglect likewise.
-Finally, we can do without the function name if we mark the term with a special symbol
-$\mathcal{O}$, leading to the so called *Big O notation*, for our example
-
-$\mathcal{O} (n^2),$
-
-which reads as: "*in the order of n square*".
-
-#### Asymptotic Notation
-
-Actually, there are three different symbols being used for denoting the asymptotic
-complexity of an algorithm (also called *Bachmann–Landau* symbols), each of them with a slightly different meaning:
-
-- **Big O:** $\mathcal{O}(g)$ denotes the complexity as an upper limit, that is, the algorithm will need at most this number of steps to complete, sometimes significantly less
-- **Omega:** $\Omega(g)$ denotes a lower limit, i.e. the algoritm will use at least this number of steps, sometimes significantly more.
-- **Theta:** $\Theta(g)$ denotes the given term as an upper *and* a lower limit, i.e. the algorithm will always take this number of steps.
-
-There are a number of standard complexity classes, which will usually be sufficient to
-describe the complexity.
-They are, from most to least efficient:
-
-- *constant*: $\Theta (1)$ 
-- *logarithmic*: $\Theta (\log n)$: 
-- *linear*: $\Theta (n)$ 
-- *loglinear*: $\Theta (n \log n)$ 
-- *quadratic*: $\Theta (n^2)$
-- *exponential*: $\Theta (2^n)$
-
-Problems of the last category belong to the class of *NP* problems, which cannot be solved deterministically in polynomial time.
-On the other hand, all non-NP problems are belived to be solvable in a running time of $\mathcal{O} (n^3)$ or less.
-
-Let's illustrate the growth rates of these complexity classes:
-"""
-
-# ╔═╡ df48e493-30a6-41bd-857f-79a5a9c6b90c
+# ╔═╡ 3732bf59-2d55-4c3c-a491-6ec6b04b060b
 begin
-	n = range(0, 100, length=101)
-	loglinear(n) = n * log(n)
-	
-	plot(n, [log.(n), n],
-	title="Growth of functions of n",
-	label=[L"\log{n}" "n"],
+	p1 = plot(x1, y1[2:end], seriestype=:steps,
+	title="The values of π(n)",
+	label="π(n)",
 	xlabel=("n"),
-	ylabel=("f(n)"),
+	xticks=(x1),
+	ylims=(0,185),
+	yticks=(y1),
+	ylabel=("π(n)"),
 	linewidth=2)
 	
-	plot!(n, loglinear.(n), label=L"n \log n", ylims=(0, 100), linewidth=2)
-	plot!(n, x -> x^2, label=L"n^2", legend=:outerbottom, legendcolumns=4, linewidth=2)
-end
-
-# ╔═╡ 6ab7723c-c16f-46ee-b5d3-3b3ef5b88fdb
-md"""
-## Recursive Definitions
-
-To understand *recursion*, you must first understand [recursion](https://www.google.com/search?channel=fs&q=recursion).
-
-A perhaps more helpful example:
-!!! tip "How many twists does it take to screw in a light bulb?"
-	1. Is it already screwed in? Then zero.
-	2. If not, then twist it once, ask me again, and add 1 to my answer.
-
-The answer reveals the nature of recursion; it consists of two steps, where the first step is called the *base case*, and the second one is the *recursive step*:
-1. **base case**: produces a trivial result and stops the computation
-2. **recursive step**: the procedure is called again with an ever increasing or decreasing parameter.
-
-In order to avoid infinite loops, the recursive step must modify the input value in such way that eventually the base case is reached.
-
-As it turns out, recursion is especially suited to solve problems defined as a *recurrence relation*.
-!!! warning "Recurrence Relation"
-	A **recurrence relation** is an equation that expresses each element of a *sequence* as a function of the preceding ones.
-	It is defined in the form
-
-	$R_n = f(n, R_{n-1}), \quad \textrm{for } n > 0$
-
-	where $f: \mathbb{N} \times X \to X$ is a function where $X$ is the set to which the elements of the sequence must belong.
-	For any $R_0 \in X$, this defines a unique sequence with $R_0$ as its first element, called the *initial value*.
-
-Let's look at an example:
-
-!!! tip "Factorial"
-	The **factorial** $n!$ is defined by the recurrence relation
-
-	$\begin{align}
-	0! &= 1\\
-	n! &= n * (n-1)!
-	\end{align}$
-
-which translates directly into a recursive function definition:
-"""
-
-# ╔═╡ ca9ae417-c56f-492a-ab5c-0e9cd0df8728
-begin
-	function facRec(n)
-		if n == 0
-			return 1
-		else
-			return n * facRec(n-1)
-		end
-	end
+	x2 = range(0, 1000, length=100)
+	asymptotic(n) = n / log(n)
+	y2 = asymptotic.(x2)
+	p2 = plot!(x2, y2, label="asymptotic growth", linewidth=2)
 	
-	for n in 1:5
-		@show n, facRec(n)
+	x3 = range(100, step=100, stop=1000)
+	y3 = Vector{Int}()
+	for i in x3
+	  push!(y3, count(p -> (i-100) < p <= i, primes))
 	end
+	p3 = plot!(x3, y3, marker=(:d, 3), linewidth=2, label="growth per interval")
+	plot!(p3)
 end
 
-# ╔═╡ 8b30de72-2b64-48e3-953a-caf82334eab4
+# ╔═╡ 4b597bbe-41e4-4355-ab87-8e52b4aa6bc1
 md"""
-The function `facRec` is an example for a *linear recursive process*, i.e. its running time is $\Theta(n)$.
+We can derive the following insights from the diagram above:
 
-However, we can take a different perspective on computing factorials.
-We could desrcibe a rule for computing $n!$ by specifying that we first multiply 1 by 2, then multiply the result by 3, then by 4, and so on until we reach $n$.
-More formally, we maintain a running product, together with a counter that counts from 1 up to $n$ and stipulating that $n!$ is the value of the product when the counter exceeds $n$.
+- the actual value for $\pi(n)$ is larger than the expected asypmtotic growth (at least for small $n$)
+- the growth of $\pi(n)$ per interval is irregular
+- the growth per interval declines in general (but not always) with increasing $n$.
 """
 
-# ╔═╡ 8b1ba980-9f15-4465-baef-0bfe66033984
-begin
-	function facIter(n)
-		function iter(product, counter)
-			if counter > n
-				product
-			else
-				iter(counter * product, counter + 1)
-			end
-		end
-		iter(1, 1)
-	end
-	
-	for n in 1:5
-		@assert facIter(n) == facRec(n)
-	end
-end
-
-# ╔═╡ d2449cd0-ecdc-4293-addd-983a0e017552
-md"""
-The function `facIter` is an example for a *linear iterative process*, i.e. its running time is also $\Theta(n)$.
-
-Comparing the two processes, they seem hardly different at all.
-Both compute the same mathematical function on the same domain, and each requires a number of steps proportional to $n$ to compute $n!$.
-Indeed, both processes even carry out the same sequence of multiplications, obtaining the same sequence of partial products.
-
-However, they lead to quite different "shapes" of how the processes are executed within a program.
-The recursive process is executed like so:
-
-	factRec(5)
-	5 * factRec(4)
-	4 * 5 * factRec(3)
-	3 * 4 * 5 * factRec(2)
-	2 * 3 * 4 * 5 * factRec(1)
-	1 * 2 * 3 * 4 * 5 * factRec(0)
-	2 * 3 * 4 * 5 * (1 * 1)
-	3 * 4 * 5 * (2 * 1)
-	4 * 5 * (3 * 2)
-	5 * (4 * 6)
-	5 * 24
-	120,
-
-while the iterative process is executed like this:
-
-	facIter(5)
-	iter(1, 1)
-	iter(1, 2)
-	iter(2, 3)
-	iter(6, 4)
-	iter(24, 5)
-	iter(120, 6)
-	120.
-
-The recursive process grows and shrinks during execution, as it has to maintain its current state in terms of the value of a function call.
-The longer the chain of recursive function calls, the more information must be maintained.
-A program stores this information on its *stack*, a [LIFO](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) datastructure, which grows proportional to the number of recursive calls.
-
-On the other hand, the iterative process does not grow and shrink, and it keeps track of the current state solely with the variables for `product` and `counter`.
-Thus, the *stack space* used for this process stays constant with growing $n$. 
-
-We must be careful not to confuse the notion of a recursive *process* with the notion of a recursive *function*.
-Both of the processes above are implemented with a recursive *function* (i.e. a function that calls itself), but only `facRec` leads to a recursive *process*, whereas `facIter` leads to an iterative process, which is preferable in general, because of its *constant* space complexity.
-
-With an *imperative* language like Julia, allowing *mutable* variables, we are able to substitute the recursive function definition with an *iterative loop*, maintaining the *iterative process*:
-"""
-
-# ╔═╡ 489ba4d3-3f02-4ad4-a8c0-7619c4dacd70
-begin
-	function facImp(n)
-		counter = 1
-		product = 1
-		while counter <= n
-			product *= counter
-			counter += 1
-		end
-		product
-	end
-	for n in 1:5
-		@assert facImp(n) == facIter(n)
-	end
-end
-
-# ╔═╡ e2d73c9f-8399-4c34-bded-4175d154a286
-md"""
-Now, let's examine the perfomance of our functions with some benchmarks:
-"""
-
-# ╔═╡ 6030bde8-a610-4703-936c-0a9a12c29505
-@btime facRec(20)
-
-# ╔═╡ 32c7bd76-1c8d-4471-810d-d03d245e17d6
-@btime facIter(20)
-
-# ╔═╡ 0e1e9caa-6970-470b-9d12-9157cbfa4722
-md"""
-Notice that the recursive function is much faster (more than 10 times) than the iterative function.
-Looking at the memory allocations, we can see that the iterative version stores intermediate results in the programs *heap*, leading to a less performant execution path.\
-The julia compiler is not able to [inline](https://docs.julialang.org/en/v1/base/base/#Base.@inline) calls to recursive functions, which we can check with the help of the `@code-typed` macro:
-"""
-
-# ╔═╡ 31acc697-21c8-4df1-a598-d29f6d7f66d8
-@code_typed optimize=true facIter(20)
-
-# ╔═╡ cb4c8e2e-9b60-4df4-bba2-e7d28f3e88ee
-md"""
-Here we can see that the result `%9` is actually computed as a call to a function `%8` with the parameters `(1, 1)`, which in turn evaluates the expression `%1`, representing the inner function `iter`, stored as a *boxed* object in the program's heap.\
-Let's compare this to the imperative version
-"""
-
-# ╔═╡ 627d75cd-802f-49df-9a5f-8e20cc918496
-@btime facImp(20)
-
-# ╔═╡ a9797347-0a67-4b70-a1a2-ea90d6a83b1b
-md"""
-which is now much faster than the recursive version (also by a factor of 10).\
-Looking at its implementation details, we can see why:
-"""
-
-# ╔═╡ dd130192-6f03-4a12-ae3c-a21cf4f04093
-@code_typed optimize=true facImp(20)
-
-# ╔═╡ 54feffb2-3404-4667-bdd0-c36f0e965aea
-md"""
-The function just executes the loop, employing only 2 `goto` statements, where the intermediate values are stored as simple integer variables on the program's stack.\
-So, with an imperative language like Julia, the most efficient way to implement *recurrence relations* is to choose an iterative process, implemented via loops.
-
-However, in a pure functional programming language, where we couldn't implement an imperative version (i.e. we'd have to rely on recursive functions), the execution of both processes will depend on the capability of the compiler to optimize [tail-recursive](https://en.wikipedia.org/wiki/Tail_call) calls.
-
-Benchmarking the following implementations in Haskell for $n = 100$
-
-```{haskell}
-facRec :: Integer -> Integer
-facRec 0 = 1
-facRec n = n * facRec (n-1)
-
-facIter :: Integer -> Integer
-facIter n = iter 1 1
-  where
-    iter product counter
-      | counter > n = product
-      | otherwise   = iter (counter * product) (counter + 1)
-```
-
-shows that both the *recursive* and the *iterative* process are being optimized into machine code with comparable efficiency:
-
-	benchmarking facRec
-	mean                 2.023 μs   (2.021 μs .. 2.024 μs)
-
-	benchmarking facIter
-    mean                 2.122 μs   (2.120 μs .. 2.124 μs)
-
-Let's look at another canonical example:
-
-!!! tip "Fibonacci Sequence"
-	The [Fibonacci Sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) is defined by the recurrence relation
-
-	$\begin{align}
-	F_0 &= 0\\
-	F_1 &= 1\\
-	F_n &= F_{n-1} + F_{n-2}, \quad \mathrm{for} \ n > 1.
-	\end{align}$
-
-	That is, every Fibonacci number is the sum of its two predecessors.
-
-which translates directy into this recursive definition:
-"""
-
-# ╔═╡ d91101a2-d2a7-45fe-9dd6-7ca223bf9d52
-begin
-	fibRec(n) = (n <= 1) ? n : fibRec(n-1) + fibRec(n-2)
-	fibRec(10)
-end
-
-# ╔═╡ 37f4196c-0fa3-474d-8ac9-5517e5546897
-md"""
-While this function will work and eventually produce the correct value, it shows a very poor performance: it employs *multiple recursion* as it contains two self-references, leading to an exponential running time and space.
-
-One way to avoid exponential growth is to use a technique called *memoization*:
-the function checks whether the input value has been calculated previously.
-If so, it is simply returned; if not, the value is calculated recursively,
-stored and returned.
-This leads to a *linear recursive process*.
-"""
-
-# ╔═╡ 6133cc2a-c768-41c4-87d5-a717bc34b449
-begin
-	global cache = Dict{Int, Int}(0 => 0, 1 => 1)
-	
-	function fibMem(n)
-	  	get!(cache, n) do
-	    	fibMem(n-1) + fibMem(n-2)
-	  	end
-	end
-
-	fibMem(10)
-	sort(cache)
-end
-
-# ╔═╡ 42c1ed7e-2eb1-4bbb-aca7-9fd0c9d785ff
-md"""
-The second method for efficiently computing $F_n$ is a *linear iteration*.
-Having learned the lesson about inlining recursive calls in Julia, we're using an imperative loop for this task straightaway:
-"""
-
-# ╔═╡ a3cddb5c-ee9a-4e43-9cbc-b4abf14b01be
-begin
-	function fibIter(n)
-		a, b = 0, 1
-		counter = 1
-		while counter < n
-			a, b = b, a+b
-			counter += 1
-		end
-		b
-	end
-
-	for n in 1:10
-	@assert fibIter(n) == fibMem(n)
-	end
-end
-
-# ╔═╡ e78b6cdf-f8d0-4f6d-86f1-090986cd93fd
-@btime fibMem(100)
-
-# ╔═╡ 83e5b18e-910e-4c5b-9ae3-64126e08cabf
-@btime fibIter(100)
-
-# ╔═╡ 81f0e921-2376-4d76-ad31-2157f82caa1b
-md"""
-Again, the imperative version is about 10 times faster than the recursive version.\
-An efficient solution with Haskell could be implemented like so:
-
-```{haskell}
-fibIter :: Int -> [Int]
-fibIter n = take n $ fibSeq 1 1
-  where fibSeq a b = a:fibSeq b (a+b)
-```
-
-yielding the sequence up to the $n$th Fibonacci number:
-
-	ghci> fibIter 10
-	[1,1,2,3,5,8,13,21,34,55]
-"""
-
-# ╔═╡ 7a29c871-cae6-445f-be51-846ddf57a668
-md"""
-Although there is a closed formula for computing the $n$th Fibonacci number, we will not explore it until the lesson about *Sequences* of the class *Real Analysis*.
-"""
-
-# ╔═╡ 6b3b197b-e468-4044-bd17-542314908b84
-md"""
-## The Tower of Hanoi
-The [Tower of Hanoi](https://en.wikipedia.org/wiki/Tower_of_Hanoi) puzzle, invented by the French mathematician *Èdouard Lucas* in 1883, is the canonical example for solving a problem with recursion.\
-We are given a tower of eight disks, initially stacked in decreasing size on one of three pegs.
-The objective is to transfer the entire tower to one of the other pegs, moving only one disk at a time and never moving a larger one onto a smaller.
-
-
-![Tower of Hanoi Animation with 4 disks](https://upload.wikimedia.org/wikipedia/commons/6/60/Tower_of_Hanoi_4.gif)
-
-### Number of Moves
-Before actually solving the problem, let's first try to answer the question
-
-	How many moves are necessary and sufficient to perform the task?
-
-In order to answer that question we *generalize* the problem and define $T_n$ as the minimum number of moves required to solve the problem, where $n$ is the number of disks of the initial tower.
-Then $T_1$ is obviously $1$, and $T_2 = 3$.\
-Considering the smallest case of all, clearly $T_0 = 0$, because no moves at all are needed to transfer a tower with $n = 0$ disks.
-But how can we transfer a larger tower?
-
-Experiments with three disks show that the idea is to transfer the top two disks to the middle peg, then move the third, then bring the other two onto it.
-This gives us a clue for transferring $n$ disks in general: we first transfer the $n-1$ smallest to a differnt peg (requiring $T_{n-1}$ moves), then move the largest (requiring one move), and finally transfer the $n-1$ smallest onto the largest (requiring another $T_{n-1}$ moves).
-Thus, we can transfer $n$ disks in at most $2T_{n-1} + 1$ moves:
-
-$T_n \leq 2T_{n-1} + 1, \quad \textrm{for } n > 0.$
-
-Observe, that this formula uses $\leq$ insead of $=$ because our construction proves only that $2T_{n-1} + 1$ moves *suffice*; but we haven't shown that $2T_{n-1} + 1$ moves are *necessary*.\
-But *is* there a better way? Actually no. At some point we must move the largest disk.
-When we do, the $n-1$ smallest must be on a single peg and it has taken at least $T_{n-1}$ moves to put them there.
-After moving the largest disk we must transfer the $n-1$ smallest disks (which must again be on a single peg) back onto the largest; this too requires at least $T_{n-1}$ moves. Hence
-
-$T_n \geq 2T_{n-1} + 1, \quad \textrm{for } n > 0.$
-
-These two inequalities, together with the trivial solution for $n=0$ yield the recurrence relation
-
-!!! tip "Minimal number of moves for solving the Tower of Hanoi"
-
-	$\begin{align}
-	T_0 &= 0\\
-	T_n &= 2T_{n-1} + 1, \quad \mathrm{for} \ n > 0.
-	\end{align}$
-"""
-
-# ╔═╡ 13e2636e-c971-4c4b-b2df-8fabdc3f7f77
-md"""
-We can find a closed formula for this recurrence by making an educated guess, based on the results for small cases:
-"""
-
-# ╔═╡ 0c649fca-f86d-453f-bf02-7b707789fe88
-begin
-	numOfMoves(n) = n == 0 ? 0 : 2 * numOfMoves(n-1) + 1
-	for n in 1:10
-		@show n, numOfMoves(n)
-	end
-end
-
-# ╔═╡ 4f143dbe-7a32-48f7-8ef9-7a0504426be3
-md"""
-It certainly looks as if
-
-$T_n = 2^n - 1, \quad \textrm{for } n \geq 0.$
-
-Let's prove that formula with *mathematical induction*:\
-**Base case**\
-For $n_0 = 0$ we get $2^0 - 1 = 1 - 1 = 0$, which is correct.
-
-**Inductive step**\
-For this problem we replace $n \textrm{ with } n - 1$ and get
-
-$\begin{align}
-T_n &= 2T_{n-1} + 1\\
-&= 2(2^{n-1} - 1) + 1\\
-&= 2^n - 2 + 1\\
-&= 2^n - 1 \ \square.
-\end{align}$
-
-Having found the correct solution for the recurrence relation, we can now think of a way of solving it without beeing *clairvoyant*.
-As it turns out, the recurrence can be simplified by adding $1$ to both sides of the equations:
-
-$\begin{align}
-T_0 + 1 &= 1\\
-T_n + 1 &= 2T_{n-1} + 2, \quad \mathrm{for} \ n > 0.
-\end{align}$
-
-Now if we let $U_n = T_n + 1$, we have
-
-$\begin{align}
-U_0 &= 1\\
-U_n &= 2U_{n-1}, \quad \mathrm{for} \ n > 0.
-\end{align}$
-
-It doesn't take genius to discover that the solution to *this* recurrence is just $U_n = 2^n$; hence
-
-$T_n = 2^n - 1.$
-"""
-
-# ╔═╡ 48f39949-ccce-4af0-ab02-458af6266f35
-md"""
-### Solving the Puzzle
-
-In order to actually solve the puzzle, we need a way to compute all the needed moves in the correct order.
-For this, we're using the same idea that we had developed for counting the moves:
-
-1. move the ($n-1$) smallest disks from the *starting* tower to the *temporary* tower
-2. move the largest disk from *start* to *goal*
-3. move the ($n-1$) smallest disks from *temp* to *goal*.
-
-But how can we put that plan into action, that is, how can we derive an algorithm that creates all the necessary moves?
-Well, actually we don't have to.
-The desrciption above *is* the algorithm, and we use *recursion* to implement it like so:
-"""
-
-# ╔═╡ 859e1849-5079-4a3d-a5bf-5db06be47483
-begin
-	global moves = []
-
-	function solve(n, start, temp, goal)
-		n == 0 && return
-		solve(n-1, start, goal, temp)
-		push!(moves, "$start -> $goal")
-		solve(n-1, temp, start, goal)
-	end
-
-	solve(3, "start", "temp", "goal")
-	moves
-end
-
-# ╔═╡ a397469b-9d79-4d15-8a74-ac6348e879db
-md"""
-The first recursive call of `solve` pushes ($n-1$) disks from *start* to *temp*, using *goal* as the intermediate tower.
-The second recursive call of `solve` pushes ($n-1$) disks from *temp* to *goal*, using *start* as the intermediate tower.
-Between those two recursive calls the current move (from *start* to *goal*) is recorded within the `moves` vector.
-If $n=0$ (*base case*) do nothing.
-
-Let's convince ourselves that the algorithm uses the minimal number of moves for solving: $T_8 = 2^8 - 1 = 255$.
-"""
-
-# ╔═╡ 4dd5af18-f139-4d16-808e-caa271438c95
-begin
-	empty!(moves)
-	solve(8, "start", "temp", "goal")
-	length(moves)
-end
-
-# ╔═╡ 2bd0f2c0-2fc3-452c-b140-e16ae541e1a4
+# ╔═╡ a325a107-c497-47b6-b1b2-0ad564791d7c
 md"""
 ## Exercises
-1) **Proof the formula for the sum of the first $n$ even numbers $S_n = \sum_{k=1}^n 2k = n(n+1)$ by mathematical induction**.
+For this lesson we are going to solve some easy problems from [Project Euler](https://projecteuler.net/about) involving prime numbers.
 
-!!! hint "Solution"
-	**base case**:\
-	For $n_0=1$ we get $1*2=2$, which is correct.
-	
-	**inductive step**:\
-	*induction hypothesis*: $\sum_{k=1}^{n+1} 2k = (n+1)(n+2).$\
-	$\begin{align}
-	lhs &= \sum_{k=1}^{n} 2k + 2(n+1)\\
-	&= n(n+1) + 2(n+1)\\
-	&= n^2 + 3n + 2\\
-	&= (n+1)(n+2) = rhs \ \square.
-	\end{align}$
-
-2) **Derive the sum formula for the first $n$ even numbers of exercise 1 using an [arithmetric progression](https://en.wikipedia.org/wiki/Arithmetic_progression#Sum)**.
-
-!!! hint "Solution"
-	The sum of an arithmetric progression can be found by multiplying the number of terms being added ($n$) by the sum of the first and last number in the progression, and dividing by 2:
-
-	$S_n = \frac{n(a_1 + a_n)}{2}.$
-	The arithmetric progression for the first $n$ even numbers is: $2,4,6,\dots, 2n$, leading to
-
-	$S_n = \frac{n(2+2n)}{2} = n(1+n) \ \square.$
-
-3) **Derive the sum formula for the first $n$ even numbers of exercise 1 using the sum formula for the first $n$ numbers**.
-
-!!! hint "Solution"
-
-	$S_n = \sum_{k=1}^n 2k = 2\sum_{k=1}^n k = 2\frac{n(n+1)}{2} = n(n+1) \ \square.$
-
-4) **Give a function definition for computing the [binomial coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient) defined by $\binom{n}{k}=\frac{n!}{k!(n-k)!}$**. Do not use any of the functions we have defined for computing $n!$ so far.
+1) Solve [Problem 3](https://projecteuler.net/problem=3) : **What is the largest prime factor of the number 600851475143 ?**
 """
 
-# ╔═╡ 436e7a32-5d98-441b-a15b-bcc61948f6f2
-function binom(n::Int, k::Int)::Int
-	k
-end
+# ╔═╡ 1b11bd1d-8d80-476b-8f39-ed888156f323
+lpf = 1
 
-# ╔═╡ dc138f94-62ca-4954-8d70-3dbdf4465eec
-if binom(6, 49) == binomial(6, 49)
-	correct(md"Congratulations! You've completed this lesson successfully.")
+# ╔═╡ 72f098c1-d5cd-42aa-b39b-baea3af72914
+if lpf == 6857
+	correct()
 else
-	keep_working(md"Your solution is not quite right.")
+	keep_working()
 end
 
-# ╔═╡ 0c458ac1-fa7d-4fa9-89ea-585c3e9991b8
+# ╔═╡ 15affb77-a13a-40ac-a7f7-e81821429039
 md"""
 !!! hint "Hint"
-	The factorial $n!$ can be written in *product notation* as $\prod_{i=1}^n i$, that is, the product of all natural numbers $m$ with $m \leq n$.
-	This notation obscures the recursive nature of the factorial's definition.
-	
-	In a functional programming language recurrent problems are typically solved in a similar manner without explicit recursion.
-	*Higher-order* functions like `map` and `reduce` apply a given function to a range of values, transforming those values into the results of the function call.
-
-	Use the appropriate higher-order function to compute the factorial.\
-	Also make sure to use integer division to obtain the correct return type.
+	Use *prime factorization* to get all the prime factors of a number.
 """
 
-# ╔═╡ 956844b3-a787-45ba-a725-98bf5cde9796
+# ╔═╡ 51917738-a338-4e55-bd23-7aa17be76a53
 md"""
 !!! hint "Solution"
 	```{julia}
-	function binom(n::Int, k::Int)::Int
-		fac(n) = foldl(*, 1:n)
-		div(fac(n), fac(k) * fac(n-k))
+	lpf = primeFactors(600851475143)[end]
+	```
+"""
+
+# ╔═╡ 62d962bc-8100-405f-b14b-559e0ae074a5
+md"""
+2) Solve [Problem 5](https://projecteuler.net/problem=5): **What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20 ?**
+"""
+
+# ╔═╡ d6b509b8-d170-4685-a17c-5b0d529921ab
+spn = 1
+
+# ╔═╡ 983e29cc-3869-4602-94c6-4d0b97e8dd09
+if spn == 232792560
+	correct()
+else
+	keep_working()
+end
+
+# ╔═╡ b74c685e-9e20-4ac6-b1e0-9f54f1dfaa8e
+md"""
+!!! hint "Hint"
+	We are searching for the least commom multiple (*lcm*) for all numbers in the interval $[2, 20]$. While there is a closed formula to compute the *lcm* of two numbers
+
+	$lcm(a, b) = \frac{ab}{gcd(a, b)},$
+
+	where $gcd(a,b)$ is the *greatest common divisor* of $a$ and $b$, this formula is not suitable for the given problem, as we'd have to do this calculation for every pair of numbers in the given interval.
+
+	Instead, use *prime factorization* to solve this problem:\
+	write every number in the interval $[2, 20]$ as a product of prime numbers, and express it as a product of prime number powers.
+	The $lcm$ of a range of numbers will be the product of the highest powers of each occuring prime factor.
+"""
+
+# ╔═╡ 54e44957-ed8d-426a-a4ab-3bb9b77d6555
+md"""
+!!! hint "Solution"
+	Setting the upper limit of the interval to 10, we'd get these highest powers of prime factors:
+
+	$\begin{align}
+	2^3 &= 8 \\
+	3^2 &= 9 \\
+	5^1 &= 5 \\
+	7^1 &= 7
+	\end{align}$
+
+	The result for the interval $[2, 10]$ can now be computed by multiplying those highest powers:
+	```{julia}
+	prod([8, 9, 5, 7])
+	```
+	To compute the *lcm* for the interval $[2, 20]$, we simply complete the product with the prime numbers 11, 13, 17, and 19, as all those factors occur only with their highest power beeing 1.\
+	But beware! The highest power for factor 2 is now 4, as $2^4 = 16$ is still less than 20.\
+	Thus, the final solution can be computed like so:
+
+	```{julia}
+	spn = prod([16,9,5,7,11,13,17,19])
+	```
+"""
+
+# ╔═╡ 677a355a-5418-4063-9320-ea8b6fbb1c62
+md"""
+3) **Solve Exercise 2 for any given upper limit of the interval, that is, define a function `solve` accepting an upper limit and computing the *lcm* of all numbers in the resulting interval $[2, n]$.**
+"""
+
+# ╔═╡ 9e64b29c-c95d-4b0b-842d-e8c2816317c1
+begin
+	function solve(n::Int)
+		1
+	end
+end
+
+# ╔═╡ c9cd2af0-c59f-4460-8eb7-eb05f4d96786
+if solve(20) == 232792560
+	correct()
+else
+	keep_working()
+end
+
+# ╔═╡ b6ebb1f7-c565-4934-b09a-8c071eca165e
+md"""
+!!! hint "Hint"
+	You will need three functions:
+	- one to convert the prime factors of a number into their powers representation
+	- another to extract the highest powers of all occuring prime factors
+	- and finally the `solve` function to compute the product of the highest powers.
+"""
+
+# ╔═╡ 7b365189-f971-4ed3-ba83-03a8bf0b9e2e
+md"""
+!!! hint "Solution"
+	First of all, we need to convert the prime factors for a given number into their powers representation, that is, we have to count the occurrences of every factor:
+	```julia
+	function primePowers(pf::Vector{Int})
+		powers = Dict{Int, Int}()
+		for f in unique(pf)
+			powers[f] = count(==(f), pf)
+		end
+		powers
 	end
 	```
-	The higher-order function `foldl` does the same as `reduce`, but with guaranteed left associativity. You could use `foldr` instead, leading to the same result. Why?
+	This will yield a dictionary, e.g. for the prime factors of 360: `Dict(5 => 1, 2 => 3, 3 => 2)`.
+	
+	Next, we get the highest powers of all prime factors of all the numbers in the interval $[3, n]$. We do this by merging all the prime factor powers into a single dictionary:
+	```julia
+	function highestPowers(n::Int)
+		hp = Dict(2 => 1)
+		for p in 3:n
+			mergewith!((p1, p2) -> max(p1, p2), hp, primePowers(primeFactors(p)))
+		end
+		hp
+	end
+	```
+	This yields for example: `highestPowers(20) = Dict(5 => 1, 13 => 1, 7 => 1, 2 => 4, 11 => 1, 17 => 1, 3 => 2, 19 => 1)`.
+
+	The final solution is then obtained by taking the highest powers and multiplying the results: 
+	```julia
+	function solve(n::Int)
+		product = 1
+		for (base, power) in pairs(highestPowers(n))
+			product *= base^power
+		end
+		product
+	end
+	```
+"""
+
+# ╔═╡ a847410f-6150-410e-83c2-183e09c7413b
+md"""
+4) Solve [Problem 7](https://projecteuler.net/problem=7): **What is the $10001st$ prime number ?**
+"""
+
+# ╔═╡ 7774b4f3-bfa0-48c9-99e8-fe582c7d6e77
+function solveTrial(n::Int)
+	n
+end
+
+# ╔═╡ 7e01194e-b3fd-4920-b433-cdfc759a4081
+if solveTrial(10_001) == 104743
+	correct()
+else
+	keep_working()
+end
+
+# ╔═╡ 26178dfb-f9b4-4518-8eb6-33fdc32c9492
+md"""
+!!! hint "Hint"
+	Use *trial division* to check wether a number is prime.
+"""
+
+# ╔═╡ a91e52ae-d53a-40e0-a86f-a347474dd333
+md"""
+!!! hint "Solution"
+	Using the function `isPrime`, which checks whether a number is prime with *trial division*, we just have to count the number of primes until we reach the $n$th number:
+	```julia
+	function solveTrial(n::Int)
+		primes = 1
+		k = 1
+		while primes < n
+			k += 2
+			isPrime(k) ? primes += 1 : nothing
+		end
+		k
+	end
+	```
+"""
+
+# ╔═╡ da9ade7b-8ff4-4321-84ea-6356da55ed13
+md"""
+5) **Solve Exercise 4 with the *Sieve of Eratosthenes*.**
+"""
+
+# ╔═╡ c4402a99-cfde-48a9-9a18-1800ead557c8
+function solveSieve(n::Int)
+	n
+end
+
+# ╔═╡ 10f6cea8-c193-4024-9ded-cd1d673e4c42
+if solveSieve(10_001) == 104743
+	correct(md"Congratulations! You've successfully completed the prime number lesson.")
+else
+	keep_working()
+end
+
+# ╔═╡ f44bb922-c1e9-460c-8db8-8b23cbee011b
+md"""
+!!! hint "Hint"
+	Just take the $n$th element of calling the `sieve` function.
+	Before that, think about with which value to call the `sieve`.
+"""
+
+# ╔═╡ 65d9c464-d37b-47c3-8cbd-5a6ec5c616a5
+md"""
+!!! hint "Solution"
+	The problem is that we don't know in advance with which value we should call the `sieve` function, that is, up to which number potential primes should be created.
+	Of course, we could find that limit with *trial and error*, but since this is a course in mathematics, we should try to get a more reasonable answer.
+
+	Using the prime number theorem $\pi(n) \sim \frac{n}{\ln n}$, we can set $\pi(n)$ to $10001$, and as we know that the number of primes per constant interval decreases with growing $n$, we can write this as the inequality $10001 \geq \frac{n}{\ln n}$.
+
+	Making some educated guesses for $n$, we can check if this inequality holds:
+	- a) $90000 \div \ln{90000} \approx 7889$
+	- b) $105000 \div ln{105000} \approx 9081$
+	- c) $120000 \div ln{120000} \approx 10260$
+
+	We set $n = 105000$ (b), the biggest value for which $\frac{n}{\ln n} \leq 10001$:
+	
+	```julia
+	function solveSieve(n::Int)
+		sieve(105_000)[n]
+	end
+	```
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2217,69 +1870,56 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─211c457d-756e-4f93-a883-3b1ec4ddbf9d
-# ╠═6fc9840a-8178-4539-8f34-9e3c2eeaf14b
-# ╟─ef05dee5-0386-47de-b46c-3fb0e06f9a55
-# ╟─5ae6e717-b158-4664-bf46-ef6393742203
-# ╟─02c404ac-8029-4fac-a0e7-62990a947d5f
-# ╟─2c8b5d80-1a66-4d5a-b273-73f9e74d12e5
-# ╟─3e22ce56-8a66-4869-bff9-5affede043c4
-# ╟─b803c184-b435-420f-9bf7-ce7ab5ec2269
-# ╟─918847f2-efdc-4934-a01f-b0e147926585
-# ╟─5e1f8525-8d6e-4faf-8e34-8a0272b31e4d
-# ╟─95d5ef99-7634-48ef-b07a-8469af335335
-# ╟─2a6c367c-531a-4b16-a8d9-224e5c177031
-# ╟─c57c16a7-dea8-4b44-87cc-2bde733b4bfb
-# ╠═97fbdfdc-9400-4b45-bc0a-470bf6178e2c
-# ╟─671bd3cb-e081-4e72-91b6-49bc614b985c
-# ╠═a012258f-e65b-41ab-be79-cffcc837b2d8
-# ╠═94faa5d5-0bf5-4d42-80ec-fa3a81102a33
-# ╠═1d8ac2b9-1100-4a35-baaf-d8b14e18807d
-# ╟─42f0052c-79e4-471d-91c6-4b5074391b0e
-# ╠═eb70769a-5b28-48d8-baca-90ab16beb7b1
-# ╠═6aebe83e-0e33-457b-b73e-79059f79cd97
-# ╠═827976d7-f93a-4d26-9fc0-652c142fad5f
-# ╟─48be45cc-2a02-4cd1-94f5-447a99ece868
-# ╟─6a509eb7-dde7-4f56-974e-89d100ed3cf2
-# ╟─df48e493-30a6-41bd-857f-79a5a9c6b90c
-# ╟─6ab7723c-c16f-46ee-b5d3-3b3ef5b88fdb
-# ╠═ca9ae417-c56f-492a-ab5c-0e9cd0df8728
-# ╟─8b30de72-2b64-48e3-953a-caf82334eab4
-# ╠═8b1ba980-9f15-4465-baef-0bfe66033984
-# ╟─d2449cd0-ecdc-4293-addd-983a0e017552
-# ╠═489ba4d3-3f02-4ad4-a8c0-7619c4dacd70
-# ╟─e2d73c9f-8399-4c34-bded-4175d154a286
-# ╠═6030bde8-a610-4703-936c-0a9a12c29505
-# ╠═32c7bd76-1c8d-4471-810d-d03d245e17d6
-# ╟─0e1e9caa-6970-470b-9d12-9157cbfa4722
-# ╠═31acc697-21c8-4df1-a598-d29f6d7f66d8
-# ╟─cb4c8e2e-9b60-4df4-bba2-e7d28f3e88ee
-# ╠═627d75cd-802f-49df-9a5f-8e20cc918496
-# ╟─a9797347-0a67-4b70-a1a2-ea90d6a83b1b
-# ╠═dd130192-6f03-4a12-ae3c-a21cf4f04093
-# ╟─54feffb2-3404-4667-bdd0-c36f0e965aea
-# ╠═d91101a2-d2a7-45fe-9dd6-7ca223bf9d52
-# ╟─37f4196c-0fa3-474d-8ac9-5517e5546897
-# ╠═6133cc2a-c768-41c4-87d5-a717bc34b449
-# ╟─42c1ed7e-2eb1-4bbb-aca7-9fd0c9d785ff
-# ╠═a3cddb5c-ee9a-4e43-9cbc-b4abf14b01be
-# ╠═e78b6cdf-f8d0-4f6d-86f1-090986cd93fd
-# ╠═83e5b18e-910e-4c5b-9ae3-64126e08cabf
-# ╟─81f0e921-2376-4d76-ad31-2157f82caa1b
-# ╟─7a29c871-cae6-445f-be51-846ddf57a668
-# ╟─6b3b197b-e468-4044-bd17-542314908b84
-# ╟─13e2636e-c971-4c4b-b2df-8fabdc3f7f77
-# ╠═0c649fca-f86d-453f-bf02-7b707789fe88
-# ╟─4f143dbe-7a32-48f7-8ef9-7a0504426be3
-# ╟─48f39949-ccce-4af0-ab02-458af6266f35
-# ╠═859e1849-5079-4a3d-a5bf-5db06be47483
-# ╟─a397469b-9d79-4d15-8a74-ac6348e879db
-# ╠═4dd5af18-f139-4d16-808e-caa271438c95
-# ╟─2bd0f2c0-2fc3-452c-b140-e16ae541e1a4
-# ╠═436e7a32-5d98-441b-a15b-bcc61948f6f2
-# ╟─dc138f94-62ca-4954-8d70-3dbdf4465eec
-# ╟─0c458ac1-fa7d-4fa9-89ea-585c3e9991b8
-# ╟─956844b3-a787-45ba-a725-98bf5cde9796
-# ╟─d8d70b1c-12b4-11ef-161c-21e7e562639a
+# ╟─f650e3b9-28e1-4396-a0f5-5a901be136ce
+# ╟─dc78f4c0-ea0c-4e9d-9984-ad60e0e2d278
+# ╟─921df2e0-ccdd-48c0-a517-d4f9d85cbdf1
+# ╟─8bfeaaa6-51dc-40a5-9b43-4d6688bc29ec
+# ╠═7e32f6cf-a3a2-481e-99ec-b12f597878e0
+# ╠═7c293013-e9ce-4293-ab85-8da9fc130372
+# ╟─c572f5e0-cbae-4d85-8971-e3d04d3a2b95
+# ╠═5b43aa09-decd-424f-815c-86ceb9d5e86f
+# ╟─06e7babf-107d-4483-a2de-651218c76751
+# ╠═f8e4913a-3944-4fa4-a316-55ad0c481b34
+# ╟─4d00050e-57cc-4a94-9dc5-2fa7dbd90d60
+# ╠═bba21c13-a354-4da6-94c9-a1f0e31e83db
+# ╠═8dee3d16-ac89-4aad-a904-052d230b9957
+# ╟─110445f1-623b-4eb8-bcd1-49c270787e9b
+# ╟─0a616fc9-ce91-4a1e-acaf-c1153f9d453d
+# ╠═48538dda-a448-480c-b7b4-5a8172275cbc
+# ╟─df3623d1-14ef-4ac6-8f0c-adc0aa31296b
+# ╠═42ecb966-a900-4915-8ee4-f36eb19554ce
+# ╟─90a4b589-6c86-4e98-b9c5-e2b59d13511c
+# ╠═88fea55b-6801-43e5-98e6-d2bd03a4ddce
+# ╟─0b21f72e-37e4-4d6d-8b1b-d44bb938f3ab
+# ╠═5a792796-9a53-4abe-b47e-6ebc01de35c6
+# ╟─081a176a-4d72-425b-9de4-0a7536917a86
+# ╟─3732bf59-2d55-4c3c-a491-6ec6b04b060b
+# ╟─4b597bbe-41e4-4355-ab87-8e52b4aa6bc1
+# ╟─a325a107-c497-47b6-b1b2-0ad564791d7c
+# ╠═1b11bd1d-8d80-476b-8f39-ed888156f323
+# ╟─72f098c1-d5cd-42aa-b39b-baea3af72914
+# ╟─15affb77-a13a-40ac-a7f7-e81821429039
+# ╟─51917738-a338-4e55-bd23-7aa17be76a53
+# ╟─62d962bc-8100-405f-b14b-559e0ae074a5
+# ╠═d6b509b8-d170-4685-a17c-5b0d529921ab
+# ╟─983e29cc-3869-4602-94c6-4d0b97e8dd09
+# ╟─b74c685e-9e20-4ac6-b1e0-9f54f1dfaa8e
+# ╟─54e44957-ed8d-426a-a4ab-3bb9b77d6555
+# ╟─677a355a-5418-4063-9320-ea8b6fbb1c62
+# ╠═9e64b29c-c95d-4b0b-842d-e8c2816317c1
+# ╟─c9cd2af0-c59f-4460-8eb7-eb05f4d96786
+# ╟─b6ebb1f7-c565-4934-b09a-8c071eca165e
+# ╟─7b365189-f971-4ed3-ba83-03a8bf0b9e2e
+# ╟─a847410f-6150-410e-83c2-183e09c7413b
+# ╠═7774b4f3-bfa0-48c9-99e8-fe582c7d6e77
+# ╟─7e01194e-b3fd-4920-b433-cdfc759a4081
+# ╟─26178dfb-f9b4-4518-8eb6-33fdc32c9492
+# ╟─a91e52ae-d53a-40e0-a86f-a347474dd333
+# ╟─da9ade7b-8ff4-4321-84ea-6356da55ed13
+# ╠═c4402a99-cfde-48a9-9a18-1800ead557c8
+# ╟─10f6cea8-c193-4024-9ded-cd1d673e4c42
+# ╟─f44bb922-c1e9-460c-8db8-8b23cbee011b
+# ╟─65d9c464-d37b-47c3-8cbd-5a6ec5c616a5
+# ╟─7235d016-18c2-11ef-124b-79d08872dc71
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -6,10 +6,20 @@ using InteractiveUtils
 
 # ╔═╡ 9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
 begin
-	include("helper.jl")
-	using Plots
+	using Markdown
 	using Luxor
+	using Plots
 	using MathTeXEngine
+	
+	keep_working(text=md"The answer is not quite right.") =
+	  Markdown.MD(Markdown.Admonition("danger", "Keep working on it!", [text]));
+	
+	almost(text) = Markdown.MD(Markdown.Admonition("warning", "Almost there!", [text]));
+	
+	correct(text=md"You got the right answer! Move on to the next exercise.") =
+	  Markdown.MD(Markdown.Admonition("correct", "Got it!", [text]));
+
+	"🏁"
 end
 
 # ╔═╡ 4fddf332-0de0-11ef-08c0-f9b97e8e2029
@@ -541,6 +551,7 @@ end
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
+Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
@@ -556,7 +567,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "c12ca1a9771a649b53a71c8d095bf799f3ec0323"
+project_hash = "c352b4b66c225f624e8214f50ef539a4f1c21f60"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -1796,7 +1807,6 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
 # ╟─4fddf332-0de0-11ef-08c0-f9b97e8e2029
 # ╠═4c58357a-7ea3-49bb-930f-1d20788aaf68
 # ╠═d25b01e5-5b2f-41f0-a2a2-6d7bdd8936df
@@ -1833,5 +1843,6 @@ version = "1.4.1+1"
 # ╟─c87611e5-4e20-49d0-bbbd-deebb6ba7b40
 # ╠═c82d6117-962c-45ca-bb49-30a70d9ce14c
 # ╟─1c1584da-4d59-4abf-8c57-42b5f7887037
+# ╟─9aa57ad7-c38f-4ec5-88bd-cfa801d9e069
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -112,7 +112,7 @@
 <main>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark" aria-label="navbar">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Grokking Mathematics</a>
+      <a class="navbar-brand" href="index.html">Grokking Mathematics</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample04" aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -129,13 +129,16 @@
           </li>
 
           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Discrete Mathematics</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="discrete/primes.html">Prime Numbers</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Real Analysis</a>
           </li>
         </ul>
-
-        <form role="search">
-          <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-        </form>
       </div>
     </div>
   </nav>
@@ -150,6 +153,7 @@
             The course is structured into several classes, each of them dedicated to a mathematical discipline:
             <ul>
               <li>Mathematical Fundamentals</li>
+              <li>Discrete Mathematics</li>
               <li>Real Analysis</li>
               <li>Linear Algebra</li>
               <li>Mathematical Optimization</li>
@@ -159,13 +163,13 @@
             But, I'm working on it and I will try to cover all the subjects listed above.
           </p>
           <p>
-            Each of the classes consists of several lessons, which in turn are presented within a single static html-page, exported from a <a href="https://plutojl.org/"> Pluto </a> notebook.<br>
+            Each class consists of several lessons, which in turn are presented within a single static html-page, exported from a <a href="https://plutojl.org/"> Pluto </a> notebook.<br>
             The course is clearly not intended as a substitute for a classical textbook, rather as an interactive workbook:
             every static html-file is meant to be run within an interactive Pluto environment, where you can explore the introduced mathematical concepts using the programming language <a href="https://docs.julialang.org/en/v1/"> Julia </a>.
           </p>
           <p>
-            As the course is meant as an introduction, you will not encounter any rigorous argument, and you will certainly not learn to give those arguments for youself.
-            But, if everything goes as intended, you will be able to understand mathematical arguments at a beginner level.<br>
+            As the course is meant as an introduction, you will not encounter any rigorous arguments, and you will certainly not learn to give rigorous arguments for youself.
+            But, if everything goes as intended, you will be able to understand mathematical arguments at a beginner level and to give simple proofs for mathematical propositions.
             And, hopefully, you might also have some fun in exploring those fundamental principles.
           </p>
         </div>
